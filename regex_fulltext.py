@@ -3,13 +3,13 @@
 # -*- coding: utf-8 -*-
 
 import re, sys, unicodedata
+from idlelib.pathbrowser import PathBrowser
 from pathlib import Path
 from typing import Iterable, List, Tuple
 
 # ========== 硬编码路径 & 参数 ==========
-INPUT_PATH  = Path(r"I:\中国民间传统故事\老黑解析版本\v-Chinese Folk Tales_sichuan_shang.text.yaml.md")
-OUTPUT_PATH = Path(r"I:\中国民间传统故事\老黑解析版本\v-Chinese Folk Tales_sichuan_shang.text.yaml.regex.md")
-
+INPUT_PATH  = Path(r"I:\中国民间传统故事\老黑解析版本\正式测试\5_Chinese Folk Tales_sichuan_normalized.md")
+OUTPUT_PATH = Path(r"I:\中国民间传统故事\老黑解析版本\正式测试\6_Chinese Folk Tales_sichuan_cleaned.md")
 ENCODING    = "utf-8"
 
 # 每阶段打印的示例数（每文件）
