@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-检测 & 修复 “异常断行”（反向规则版）
+检测 & 修复 “异常断行”（反向规则版 + CSV输出）
 -------------------------------------------------
 规则：
 - 当前行末尾为汉字或数字；
@@ -10,13 +10,14 @@
 """
 
 import re
+import csv
 from pathlib import Path
 
 # ===== 配置 =====
 INPUT_PATH  = r"I:\中国民间传统故事\老黑解析版本\正式测试\6.4_Chinese Folk Tales_sichuan_cleaned.md"
 OUTPUT_PATH = r"I:\中国民间传统故事\老黑解析版本\正式测试\6.5_Chinese Folk Tales_sichuan_cleaned.md"
+CSV_PATH    = r"I:\中国民间传统故事\老黑解析版本\正式测试\detected_linebreaks.csv"
 ONLY_DETECT = True   # True=仅检测；False=修复
-CONTEXT_LINES = 1    # 打印上下文行
 # =================
 
 # Markdown结构识别
@@ -73,9 +74,12 @@ def detect_and_fix(lines):
             and not is_md_boundary(lines[i + 2])
         ):
             merged_line = line + normalize_line(lines[i + 2])
+            # 在原文形态中插入 [ ] 表示断裂位置
+            marked_before = line + "[              ]" + normalize_line(lines[i + 2])
+
             merged_records.append({
                 "heading": current_heading,
-                "before": line,
+                "before": marked_before,
                 "after": merged_line,
                 "context_before": normalize_line(lines[i-1]) if i > 0 else "",
                 "context_after": normalize_line(lines[i+3]) if i + 3 < n else ""
@@ -95,9 +99,27 @@ def detect_and_fix(lines):
     return fixed, merged_records, merged_count
 
 
+def export_csv(records, path: Path):
+    """导出检测结果为CSV"""
+    with open(path, "w", newline="", encoding="utf-8-sig") as f:
+        writer = csv.writer(f)
+        writer.writerow(["Heading", "Before (原文形态)", "After (拼接后形态)", "ContextBefore", "ContextAfter"])
+        for rec in records:
+            writer.writerow([
+                rec["heading"],
+                rec["before"],
+                rec["after"],
+                rec["context_before"],
+                rec["context_after"],
+            ])
+    print(f"\n🧾 已导出检测结果 CSV：{path}")
+
+
 def main():
     ip = Path(INPUT_PATH)
     op = Path(OUTPUT_PATH)
+    csvp = Path(CSV_PATH)
+
     if not ip.exists():
         raise FileNotFoundError(f"输入文件不存在：{ip}")
 
@@ -110,21 +132,18 @@ def main():
     print("======================")
 
     if merged_records:
-        print("\n====== 异常断行（按最近标题） ======")
-        for rec in merged_records:
+        for rec in merged_records[:10]:
             print(f"\n{rec['heading']}")
             print(f"  原始：{rec['before']}")
             print(f"  合并：{rec['after']}")
-            if rec['context_before']:
-                print(f"  上文：{rec['context_before']}")
-            if rec['context_after']:
-                print(f"  下文：{rec['context_after']}")
+        export_csv(merged_records, csvp)
 
     if ONLY_DETECT:
-        print("\n🔍 当前为检测模式，仅打印结果，不写文件。")
+        print("\n🔍 当前为检测模式，仅打印结果并输出CSV，不写文件。")
     else:
         Path(OUTPUT_PATH).write_text("".join(fixed_lines), encoding="utf-8")
         print(f"\n✅ 已写出修复后文件：{OUTPUT_PATH}")
 
 if __name__ == "__main__":
     main()
+
