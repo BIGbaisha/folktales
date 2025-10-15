@@ -17,7 +17,7 @@ from typing import List, Tuple
 
 # ========= 硬编码路径 =========
 INPUT_PATH  = r"I:\中国民间传统故事\老黑解析版本\正式测试\5_Chinese Folk Tales_sichuan_normalized.md"
-OUTPUT_PATH = r"I:\中国民间传统故事\老黑解析版本\正式测试\6_Chinese Folk Tales_sichuan_cleaned.md"
+OUTPUT_PATH = r"I:\中国民间传统故事\老黑解析版本\正式测试\6.2_Chinese Folk Tales_sichuan_cleaned.md"
 
 # ========= 通用：全角/半角、空白、标点 =========
 # 全角数字与英字转半角（按需可扩展）
