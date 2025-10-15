@@ -1,41 +1,40 @@
-# 创建时间: 2025/10/14 12:36
-# -*- coding: utf-8 -*-
+
 """
-Markdown 文本分析 + 清理：
-1) 检测：
-   - 非标题行空格总数；
-   - 非标题行中一位数字出现次数；
-   - 统计这些数字所在的 H4 段落并打印；
-2) 清理（可选）：
-   - 删除正文中多余空格（除 markdown 结构符号后）；
-   - 删除正文中出现的一位数字；
-3) 通过 ONLY_DETECT 开关控制是否执行清理写出。
+检测正文中混杂中文出现的一位数字，并输出 CSV
+------------------------------------------------
+功能：
+1️⃣ 检测正文中与中文混杂出现的单个数字（1–9）；
+2️⃣ 不匹配 NO3、b5、a1 之类；
+3️⃣ 打印上下文；
+4️⃣ 导出 CSV 文件；
+5️⃣ 可选择清理模式或检测模式。
 """
 
 import re
+import csv
 from pathlib import Path
 from collections import defaultdict
 
-# ===== 修改为你的文件路径 =====
+# ===== 配置 =====
 INPUT_PATH = r"I:\中国民间传统故事\老黑解析版本\正式测试\6.3_Chinese Folk Tales_sichuan_cleaned.md"
 OUTPUT_PATH = r"I:\中国民间传统故事\老黑解析版本\正式测试\6.4_Chinese Folk Tales_sichuan_cleaned.md"
-# 是否只检测，不输出清理结果文件
-ONLY_DETECT = True   # True=仅检测；False=检测并写出清理文件
-# ============================
+CSV_PATH = r"I:\中国民间传统故事\老黑解析版本\正式测试\6.3_detected_single_digits.csv"
 
-# 正则
+ONLY_DETECT = True   # True=仅检测并输出CSV；False=清理后写出新文件
+# =================
+
 RE_HEADING = re.compile(r"^#")
 RE_H4 = re.compile(r"^(####)\s*(.*)$")
-RE_SINGLE_DIGIT = re.compile(r"\b\d\b")
-# Markdown 结构符号前缀（空格清理豁免区）
+
+# ✅ 改进匹配：仅匹配非字母数字包围的一位数字
+RE_SINGLE_DIGIT = re.compile(r"(?<![0-9A-Za-z])([1-9])(?![0-9A-Za-z])")
+
+# Markdown结构符号豁免
 RE_MD_PREFIX = re.compile(r"^\s*(?:[-*+]|\d{1,3}[.)]|>+)\s+")
 
+
 def clean_line(line: str) -> str:
-    """
-    清理正文行：
-    1. 删除多余空格（除 markdown 符号后的空格）
-    2. 删除一位数字（1–9）
-    """
+    """删除正文中一位数字及多余空格"""
     m = RE_MD_PREFIX.match(line)
     prefix = ""
     rest = line
@@ -43,26 +42,19 @@ def clean_line(line: str) -> str:
         prefix = m.group(0)
         rest = line[len(prefix):]
 
-    # 删除一位数字
     rest = RE_SINGLE_DIGIT.sub("", rest)
-
-    # 删除多余空格
     rest = re.sub(r"[ \t]+", " ", rest).strip()
-
     return prefix + rest
 
 
 def analyze_text(text: str):
-    space_count = 0
-    digit_count = 0
-    line_count = 0
-
+    """检测 + 清理 + 生成结果列表"""
     current_h4 = "（无H4标题）"
     h4_digit_lines = defaultdict(list)
     cleaned_lines = []
 
     for lineno, line in enumerate(text.splitlines(), start=1):
-        # 标题检测
+        # 标题识别
         if RE_HEADING.match(line):
             m4 = RE_H4.match(line)
             if m4:
@@ -70,54 +62,69 @@ def analyze_text(text: str):
             cleaned_lines.append(line)
             continue
 
-        # ---- 检测阶段 ----
-        line_count += 1
-        space_count += line.count(" ")
-        digits = RE_SINGLE_DIGIT.findall(line)
-        if digits:
-            digit_count += len(digits)
-            snippet = line.strip()
-            if len(snippet) > 80:
-                snippet = snippet[:80] + "..."
-            h4_digit_lines[current_h4].append((lineno, snippet))
+        # 检测数字
+        for m in RE_SINGLE_DIGIT.finditer(line):
+            pos = m.start()
+            start = max(0, pos - 5)
+            end = min(len(line), pos + 6)
+            context = line[start:end].replace("\n", "")
+            h4_digit_lines[current_h4].append((lineno, m.group(1), context, line.strip()))
 
-        # ---- 清理阶段 ----
+        # 清理
         if ONLY_DETECT:
             cleaned_lines.append(line)
         else:
-            cleaned_line = clean_line(line)
-            cleaned_lines.append(cleaned_line)
+            cleaned_lines.append(clean_line(line))
 
-    # 输出检测结果
+    return cleaned_lines, h4_digit_lines
+
+
+def export_csv(h4_digit_lines, path: Path):
+    """输出检测结果到 CSV"""
+    with open(path, "w", newline="", encoding="utf-8-sig") as f:
+        writer = csv.writer(f)
+        writer.writerow(["H4标题", "行号", "命中数字", "上下文", "原始行"])
+        for h4, items in h4_digit_lines.items():
+            for ln, digit, context, snippet in items:
+                writer.writerow([h4, ln, digit, context, snippet])
+    print(f"\n🧾 已导出检测结果 CSV：{path}")
+
+
+def print_summary(h4_digit_lines):
+    """打印检测结果摘要"""
+    total_hits = sum(len(v) for v in h4_digit_lines.values())
     print("====== 检测结果 ======")
-    print(f"非标题行总数：{line_count}")
-    print(f"非标题行空格总数：{space_count}")
-    print(f"非标题行一位数字(1–9)出现次数：{digit_count}")
-    print("======================")
+    print(f"共检测到一位数字出现 {total_hits} 次\n")
 
-    if h4_digit_lines:
-        print("\n====== 一位数字出现位置（按H4分组） ======")
-        for h4_title, lines in h4_digit_lines.items():
-            print(f"\n#### {h4_title}  —— 出现 {len(lines)} 次：")
-            for ln, snippet in lines:
-                print(f"  [行{ln}] {snippet}")
-    else:
-        print("\n未检测到正文中出现一位数字的行。")
+    for h4, items in list(h4_digit_lines.items())[:10]:
+        print(f"\n#### {h4} —— 出现 {len(items)} 次：")
+        for ln, digit, context, snippet in items[:3]:
+            print(f"  [行{ln}] {snippet}")
+            print(f"           ↑ 数字: {digit} | 上下文: {context}")
+        if len(items) > 3:
+            print(f"  ……其余 {len(items)-3} 条省略")
 
-    # 是否写出清理后的文本
-    if not ONLY_DETECT:
-        Path(OUTPUT_PATH).write_text("\n".join(cleaned_lines), encoding="utf-8")
-        print("\n✅ 已输出清理后文件：", OUTPUT_PATH)
-    else:
-        print("\n🔍 当前为“仅检测”模式，不写出清理文件。")
+    if len(h4_digit_lines) > 10:
+        print(f"\n……其余 {len(h4_digit_lines)-10} 个标题省略")
 
 
 def main():
     ip = Path(INPUT_PATH)
     if not ip.exists():
         raise FileNotFoundError(f"输入文件不存在：{ip}")
+
     text = ip.read_text(encoding="utf-8", errors="ignore")
-    analyze_text(text)
+    cleaned_lines, h4_digit_lines = analyze_text(text)
+
+    print_summary(h4_digit_lines)
+    export_csv(h4_digit_lines, Path(CSV_PATH))
+
+    if ONLY_DETECT:
+        print("\n🔍 当前为检测模式，仅打印并输出CSV，不修改原文件。")
+    else:
+        Path(OUTPUT_PATH).write_text("\n".join(cleaned_lines), encoding="utf-8")
+        print(f"\n✅ 已清理后写出文件：{OUTPUT_PATH}")
+
 
 if __name__ == "__main__":
     main()
