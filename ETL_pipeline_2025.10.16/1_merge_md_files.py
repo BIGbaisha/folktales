@@ -11,12 +11,12 @@ import os
 
 # ====== 硬编码输入输出 ======
 inputs = [
-    r"I:\中国民间传统故事\老黑解析版本\正式测试\Chinese Folk Tales_sichuan_a.md",
-    r"I:\中国民间传统故事\老黑解析版本\正式测试\Chinese Folk Tales_sichuan_b.md",
-    r"part3.md",
-    r"part4.md"
+    r"I:\中国民间传统故事\分卷清洗\yunnan\Chinese Folk Tales_yunnan_a_1.md",
+    r"I:\中国民间传统故事\分卷清洗\yunnan\Chinese Folk Tales_yunnan_a_2.md",
+    r"I:\中国民间传统故事\分卷清洗\yunnan\Chinese Folk Tales_yunnan_b_1.md",
+    r"I:\中国民间传统故事\分卷清洗\yunnan\Chinese Folk Tales_yunnan_b_2.md"
 ]
-output_path = r"I:\中国民间传统故事\老黑解析版本\正式测试\Chinese Folk Tales_sichuan.md"
+output_path = r"I:\中国民间传统故事\分卷清洗\yunnan\Chinese Folk Tales_yunnan.md"
 
 # ====== 合并逻辑 ======
 merged_parts = []

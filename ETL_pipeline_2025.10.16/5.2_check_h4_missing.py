@@ -15,7 +15,7 @@
         import re
         from pathlib import Path
 
-        INPUT_PATH = r"I:\中国民间传统故事\老黑解析版本\正式测试\5.1_Chinese Folk Tales_sichuan_normalized.md"
+        INPUT_PATH = r"I:\中国民间传统故事\分卷清洗\yunnan\5.1_Chinese Folk Tales_yunnan.md"
 
         def extract_h4_titles(text):
             pattern = re.compile(r"^####\s*(.+)$", re.M)

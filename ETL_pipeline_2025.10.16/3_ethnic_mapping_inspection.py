@@ -1,17 +1,16 @@
-# 创建时间: 2025/10/15 14:20
-# 版本: v2025.10
+# 2025-10-17 10:00:00
+# \ETL_pipeline_2025.10.16\3_ethnic_mapping_inspection.py
+
 # -*- coding: utf-8 -*-
 """
-3_ethnic_mapping_inspection_enhanced.py
-----------------------------------------
+民族映射检测（命中与未命中分开输出）
+------------------------------------
 功能：
-- 检测中国民间故事 markdown 文件中的“族”结尾词，根据民族映射表检查映射情况
-- 通过 MODE 选项，切换不同模式：
-  * MODE = "inspect" 输出未映射项到 CSV
-  * MODE = "summary" 打印简短行与以“族”结尾的文本行
-
-输入路径：I:\\中国民间传统故事\\老黑解析版本\\正式测试\\
-输出：CSV 文件或简要推出
+1. 检测 markdown 文件中以“族”结尾的民族名；
+2. 与映射表对比；
+3. 输出两个 CSV：
+   - 一个包含命中映射表的民族；
+   - 一个包含未命中的民族。
 """
 
 import re
@@ -20,16 +19,17 @@ from pathlib import Path
 import sys
 
 # ============================
-# 可配置参数
+# 配置参数
 # ============================
 MODE = "inspect"  # 可选："inspect" 或 "summary"
+INPUT_MD = r"I:\中国民间传统故事\分卷清洗\yunnan\Chinese Folk Tales_yunnan.md"
+MAPPING_TXT = r"D:\pythonprojects\folktales\data\ethnic_mapping.txt"
 
-INPUT_MD = r"I:\\中国民间传统故事\\老黑解析版本\\正式测试\\2.1_raw_sichuan.md"
-MAPPING_TXT = r"I:\\中国民间传统故事\\老黑解析版本\\正式测试\\ethnic_mapping.txt"
-OUTPUT_CSV = r"I:\\中国民间传统故事\\老黑解析版本\\正式测试\\3.1_ethnic_unmapped.csv"
+OUTPUT_HIT_CSV = r"I:\中国民间传统故事\分卷清洗\yunnan\3.1_ethnic_hit.csv"
+OUTPUT_UNMAPPED_CSV = r"I:\中国民间传统故事\分卷清洗\yunnan\3.1_ethnic_unmapped.csv"
 
 # ============================
-# 功能模块
+# 函数定义
 # ============================
 
 def load_mapping(path):
@@ -42,38 +42,55 @@ def load_mapping(path):
             line = line.strip()
             if line:
                 mapping.add(line)
-    print(f"[INFO] 已加载映射项 {len(mapping)} 条")
+    print(f"[INFO] 已加载映射表，共 {len(mapping)} 项")
     return mapping
 
 def extract_ethnic_terms(text):
+    # 匹配长度 1~5 的汉字 + “族”
     return re.findall(r"([\u4e00-\u9fa5]{1,5}族)", text)
 
 def inspect_mode():
-    print("[MODE] inspect - 检测未映射民族")
+    print("[MODE] inspect - 输出命中与未命中映射表的民族")
     mapping = load_mapping(MAPPING_TXT)
     text = Path(INPUT_MD).read_text(encoding="utf-8")
     terms = extract_ethnic_terms(text)
     unique_terms = sorted(set(terms))
+
+    hits = [t for t in unique_terms if t in mapping]
     unmapped = [t for t in unique_terms if t not in mapping]
-    with open(OUTPUT_CSV, "w", newline="", encoding="utf-8-sig") as f:
+
+    # ====== 写入命中表 ======
+    with open(OUTPUT_HIT_CSV, "w", newline="", encoding="utf-8-sig") as f:
+        writer = csv.writer(f)
+        writer.writerow(["命中映射项"])
+        for t in hits:
+            writer.writerow([t])
+
+    # ====== 写入未命中表 ======
+    with open(OUTPUT_UNMAPPED_CSV, "w", newline="", encoding="utf-8-sig") as f:
         writer = csv.writer(f)
         writer.writerow(["未映射项"])
         for t in unmapped:
             writer.writerow([t])
-    print(f"[DONE] 未映射 {len(unmapped)} 项 -> {OUTPUT_CSV}")
+
+    # ====== 打印统计 ======
+    print("\n=== 检测结果汇总 ===")
+    print(f"总计民族词：{len(unique_terms)}")
+    print(f"✅ 命中映射：{len(hits)} → {OUTPUT_HIT_CSV}")
+    print(f"⚠️ 未命中：{len(unmapped)} → {OUTPUT_UNMAPPED_CSV}")
+    print("🎉 检测完成")
 
 def summary_mode():
-    print("[MODE] summary - 打印短行与族后结尾行")
+    print("[MODE] summary - 打印短行与“族”结尾行")
     text = Path(INPUT_MD).read_text(encoding="utf-8")
-    lines = text.splitlines()
-    for line in lines:
+    for line in text.splitlines():
         s = line.strip()
         if len(s) <= 10 and s.endswith("族"):
             print(s)
     print("[DONE] 摘要打印完成")
 
 # ============================
-# 主调用逻辑
+# 主逻辑
 # ============================
 
 def main():

@@ -13,8 +13,8 @@ import re
 from pathlib import Path
 
 # ===== 配置 =====
-INPUT_PATH  =r"I:\中国民间传统故事\老黑解析版本\正式测试\6.5_Chinese Folk Tales_sichuan_cleaned.md"
-OUTPUT_PATH = r"I:\中国民间传统故事\老黑解析版本\正式测试\6.6_Chinese Folk Tales_sichuan_cleaned.md"
+INPUT_PATH  = r"I:\中国民间传统故事\分卷清洗\yunnan\6.5_Chinese Folk Tales_yunnan.md"
+OUTPUT_PATH = r"I:\中国民间传统故事\分卷清洗\yunnan\6.6_Chinese Folk Tales_yunnan.md"
 
 REMOVE_LINKS = False   # True=仅检测打印; False=移除链接
 # =================

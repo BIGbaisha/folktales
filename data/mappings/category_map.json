@@ -2,8 +2,10 @@
     "神话":"shenhua","传说":"chuanshuo","故事":"gushi",
     "开天辟地神话":"kaitianpidishenhua","自然天象神话":"zirantianxiangshenhua",
     "动物植物神话":"dongwuzhiwushenhua","动植物神话":"dongzhiwushenhua",
-    "图腾祖先神话":"tutengzuxianshenhua","洪水、人类再繁衍神话":"hongshuirenleizaifanyanshenhua",
+    "图腾祖先神话":"tutengzuxianshenhua","祖先神话":"zuxianshenhua",
+    "洪水人类再繁衍神话":"hongshuirenleizaifanyanshenhua",
     "文化起源神话":"wenhuaqiyuanshenhua","神和英雄神话":"shenheyingxiongshenhua",
+    "英雄神话":"yingxiongshenhua",
     "人物传说":"renwuchuanshuo","三国蜀汉人物传说":"sanguoshuhanrenwuchuanshuo",
     "文人传说":"wenrenchuanshuo","现代革命家传说":"xiandaigemingjiachuanshuo",
     "史事传说":"shishichuanshuo","地方传说":"difang_chuanshuo",
@@ -11,5 +13,6 @@
     "动植物传说":"dongzhiwuchuanshuo","土特产传说":"tutechanchuanshuo",
     "民间工艺传说":"minjiangongyichuanshuo","风俗传说":"fengsuchuanshuo",
     "动物故事":"dongwugushi","幻想故事":"huanxianggushi","鬼狐精怪故事":"guihujingguaigushi",
-    "生活故事":"shenghuogushi","机智人物故事":"jizhirenwugushi","寓言故事":"yuyangushi","笑话":"xiaohua"
+    "生活故事":"shenghuogushi","机智人物故事":"jizhirenwugushi",
+    "寓言故事":"yuyangushi","寓言":"yuyan","笑话":"xiaohua"
 }

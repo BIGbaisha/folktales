@@ -16,8 +16,8 @@ import re
 from typing import List, Tuple
 
 # ========= 硬编码路径 =========
-INPUT_PATH  = r"I:\中国民间传统故事\老黑解析版本\正式测试\5_Chinese Folk Tales_sichuan_normalized.md"
-OUTPUT_PATH = r"I:\中国民间传统故事\老黑解析版本\正式测试\6.2_Chinese Folk Tales_sichuan_cleaned.md"
+INPUT_PATH  = r"I:\中国民间传统故事\分卷清洗\yunnan\5.1_Chinese Folk Tales_yunnan.md"
+OUTPUT_PATH = r"I:\中国民间传统故事\分卷清洗\yunnan\6.2_Chinese Folk Tales_yunnan.md"
 
 # ========= 通用：全角/半角、空白、标点 =========
 # 全角→半角字符映射（用于关系库/向量库清洗），更新脚本后，增加对常见全角标点的映射

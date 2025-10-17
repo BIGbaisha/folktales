@@ -19,8 +19,8 @@ from collections import Counter
 from pathlib import Path
 
 # === 硬编码路径（可修改） ===
-INPUT_PATH  = r"I:\中国民间传统故事\老黑解析版本\正式测试\6.8_Chinese Folk Tales_sichuan_cleaned.md"
-OUTPUT_CSV  = r"I:\中国民间传统故事\老黑解析版本\正式测试\7.1_final_clean_report.csv"
+INPUT_PATH  = r"I:\中国民间传统故事\分卷清洗\yunnan\6.8_Chinese Folk Tales_yunnan.md"
+OUTPUT_CSV  = r"I:\中国民间传统故事\分卷清洗\yunnan\7.1_final_clean_report.csv"
 ENC = "utf-8"
 
 

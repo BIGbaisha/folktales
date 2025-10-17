@@ -1,10 +1,15 @@
-
-# 创建时间: 2025/10/17 00:45
+# 创建时间: 2025/10/17 12:00
+# update_all_paths.py
 """
 功能：
 批量扫描目录下所有 .py 文件，
 自动替换路径字符串中的地区名（如 sichuan → yunnan），
-支持预览模式、自动备份与 CSV 修改报告（自定义输出目录，带元信息头行）。
+并同时检测并替换 REGION = "xxx" 配置语句。
+支持预览模式、自动备份与 CSV 修改报告。
+⚠️ 注意：
+以下替换规则仅修改静态定义（如 REGION = "sichuan"），
+不会修改动态定义（如 REGION = args.region）。
+
 """
 
 import os
@@ -14,22 +19,24 @@ import csv
 from datetime import datetime
 
 # === 配置区 ===
-BASE_DIR = r"I:\中国民间传统故事\老黑解析版本\正式测试"       # 要处理的脚本所在目录
-OLD_REGION = "sichuan"   # 旧地名
-NEW_REGION = "yunnan"    # 新地名（如 yunnan / ningxia / guizhou）
-PREVIEW = True           # True = 仅预览不写入; False = 实际修改
-REPORT_DIR = r"I:\中国民间传统故事\老黑解析版本\清洗日志\路径替换报告"  # CSV 报告输出目录
-
-# 自动生成报告文件名（包含地区名）
+BASE_DIR = r"D:\pythonprojects\folktales\ETL_pipeline_2025.10.16"
+OLD_REGION = "sichuan"
+NEW_REGION = "yunnan"
+PREVIEW = True
+REPORT_DIR = r"I:\中国民间传统故事\分卷清洗\yunnan"
 REPORT_NAME = f"path_change_report_{NEW_REGION}_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
 
-# 匹配常见路径定义行（input_path / output_path / csv_output / logfile 等）
+# 匹配路径定义语句
 RE_PATH_LIKE = re.compile(
     r'(?P<key>\w*path\w*|\w*file\w*|\w*csv\w*|\w*out\w*)\s*=\s*r?"([^"\']+)"',
     re.IGNORECASE
 )
 
-# 存储所有修改记录
+# ✅ 新增：匹配 REGION = "xxx" 定义语句
+RE_REGION_LINE = re.compile(
+    r'REGION\s*=\s*["\'](?P<region>[a-zA-Z_]+)["\']'
+)
+
 changes = []
 
 
@@ -40,18 +47,15 @@ def replace_region_in_path(text: str) -> str:
 
 
 def process_script(file_path: str):
-    """扫描并替换单个脚本中的路径"""
+    """扫描并替换单个脚本中的路径和 REGION 定义"""
     with open(file_path, "r", encoding="utf-8") as f:
         original_text = f.read()
 
-    matches = RE_PATH_LIKE.findall(original_text)
-    if not matches:
-        print(f"⚪ {os.path.basename(file_path)} 没有路径定义，跳过。")
-        return
-
-    changed = False
     new_text = original_text
+    changed = False
 
+    # --- 匹配路径定义 ---
+    matches = RE_PATH_LIKE.findall(original_text)
     for key, path in matches:
         if OLD_REGION.lower() in path.lower():
             new_path = replace_region_in_path(path)
@@ -67,6 +71,24 @@ def process_script(file_path: str):
             print(f" →  {new_path}\n")
             new_text = new_text.replace(path, new_path)
 
+    # --- ✅ 新增逻辑：检测 REGION 定义并替换 ---
+    region_match = RE_REGION_LINE.search(original_text)
+    if region_match:
+        region_value = region_match.group("region")
+        if region_value.lower() == OLD_REGION.lower():
+            new_text = RE_REGION_LINE.sub(f'REGION = "{NEW_REGION}"', new_text)
+            changed = True
+            changes.append({
+                "script_name": os.path.basename(file_path),
+                "path_type": "REGION",
+                "old_path": region_value,
+                "new_path": NEW_REGION
+            })
+            print(f"🔸 {os.path.basename(file_path)} | REGION")
+            print(f"    {region_value}")
+            print(f" →  {NEW_REGION}\n")
+
+    # --- 写入或预览 ---
     if not changed:
         print(f"⚪ {os.path.basename(file_path)} 无需修改。\n")
         return
@@ -82,7 +104,7 @@ def process_script(file_path: str):
 
 
 def export_report():
-    """导出修改统计CSV，带元信息头行"""
+    """导出修改统计CSV"""
     if not changes:
         print("📭 无修改记录，不生成报告。")
         return
@@ -90,7 +112,6 @@ def export_report():
     os.makedirs(REPORT_DIR, exist_ok=True)
     report_path = os.path.join(REPORT_DIR, REPORT_NAME)
 
-    # 写入报告文件
     with open(report_path, "w", newline="", encoding="utf-8-sig") as f:
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
         f.write(f"# 地区替换：{OLD_REGION} → {NEW_REGION}   生成时间：{timestamp}\n")
