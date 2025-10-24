@@ -1,20 +1,17 @@
 # -*- coding: utf-8 -*-
-# 创建时间: 2025/10/21
+# 创建时间: 2025/10/24
 """
 =============================================================
-标题等级梳理脚本（逐行识别版）
-Version: ETL_pipeline_2025.10.21/5_titles_normalize_v10.py
+标题等级梳理脚本（逐行识别版 + 修正版加粗逻辑）
+Version: ETL_pipeline_2025.10.24/5_titles_normalize_v11.py
 =============================================================
 
 功能概述：
 -------------------------------------------------------------
-本脚本按逐行识别逻辑执行标题层级判断。
-处理顺序：
-1. 逐行识别 H1~H4；
-2. 对识别结果中 level==1 的行，判断是否属于 H1 规则；
-   若不匹配（非前言、后记、神话、传说、故事），
-   则去掉 # 并加粗；
-3. 输出规范化 Markdown、统计表与加粗明细表。
+1. 按行识别 H1~H4；
+2. 若行首带单个 # 但不在 H1 规则中（前言、后记、神话、传说、故事），
+   且未被识别为 H1~H4 标题 → 去掉 # 并加粗 **...**；
+3. 输出规范化 Markdown、统计表与加粗明细表（始终生成两份 CSV）。
 """
 
 import os
@@ -50,16 +47,17 @@ def build_fuzzy_regex(text: str) -> re.Pattern:
     return re.compile(pattern)
 
 # ==========================================================
-# 规则定义（H1~H4）
+# 标题匹配规则
 # ==========================================================
 H1_TITLES = ["前言", "后记", "神话", "传说", "故事"]
 H2_TITLES = [
-    "开天辟地神话","自然天象神话","动物植物神话","图腾祖先神话",
+    "开天辟地神话","自然天象神话","动物植物神话","动植物神话","图腾祖先神话","祖先神话","天体自然神话",
     "洪水人类再繁衍神话","文化起源神话","神和英雄神话","英雄神话",
     "人物传说","三国蜀汉人物传说","文人传说","现代革命家传说",
-    "史事传说","地方传说","名山传说","风俗传说",
+    "史事传说","地方传说","名山传说","风俗传说","动植物传说","动物植物传说","丰都鬼城传说",
+    "土特产传说","民间工艺传说",
     "动物故事","幻想故事","鬼狐精怪故事","生活故事",
-    "机智人物故事","寓言故事","笑话"
+    "机智人物故事","寓言故事","笑话","寓言"
 ]
 
 H1_PATTERNS = [build_fuzzy_regex(t) for t in H1_TITLES]
@@ -85,7 +83,6 @@ def detect_headings(lines):
             results.append({"level": None, "title": None, "text": line})
             continue
 
-        # 去掉 # 便于匹配
         core = RE_ALL_HASHES.sub("", stripped)
         lvl, title = None, None
 
@@ -119,19 +116,23 @@ def detect_headings(lines):
     return results
 
 # ==========================================================
-# 后处理：扫描识别后仍为 H1 的行 → 若不属于 H1 规则则加粗
+# 修正版：带单个#且不匹配H1规则 → 加粗
 # ==========================================================
 def emphasize_unmatched_h1(results):
     emphasized = []
     for item in results:
-        if item["level"] == 1:  # 已识别为H1，但可能是假H1
-            line = item["text"].rstrip("\n")
+        line = item["text"].rstrip("\n")
+
+        # 原始行为单个#
+        if re.match(r"^\s*#(?!#)", line):
             core = re.sub(r"^\s*#\s*", "", line).strip()
-            matched = any(p.match(core) for p in H1_PATTERNS)
-            if not matched:  # 不属于正式H1
+            matched_h1 = any(p.match(core) for p in H1_PATTERNS)
+            # 若行未被识别为任何标题或不是合法H1
+            if (not item["level"]) or (item["level"] == 1 and not matched_h1):
                 item["text"] = f"**{core}**\n"
                 item["level"] = None
                 emphasized.append(core)
+
     return results, emphasized
 
 # ==========================================================
@@ -156,7 +157,7 @@ def export_results(results, emphasized):
     with open(OUTPUT_TARGET, "w", encoding="utf-8") as f:
         f.writelines(out_lines)
 
-    # CSV 汇总
+    # 输出两个 CSV（始终生成）
     rows = [{
         "file": os.path.basename(INPUT_PATH),
         "H1": counts[1],
@@ -171,18 +172,17 @@ def export_results(results, emphasized):
         writer.writeheader()
         writer.writerows(rows)
 
-    if emphasized:
-        with open(CSV_EMPH_PATH, "w", encoding="utf-8", newline="") as f:
-            writer = csv.writer(f)
-            writer.writerow(["Emphasized_H1_Text"])
-            for t in emphasized:
-                writer.writerow([t])
+    # 第二个CSV即使为空也生成
+    with open(CSV_EMPH_PATH, "w", encoding="utf-8", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["Emphasized_H1_Text"])
+        for t in emphasized:
+            writer.writerow([t])
 
     summary = "，".join([f"H{lvl}={counts[lvl]}（例：{'；'.join(samples[lvl])}）" for lvl in range(1,5) if counts[lvl]])
     print(f"✅ 标题识别完成 | {summary} | 加粗H1={len(emphasized)}")
     print(f"📄 统计文件: {CSV_PATH}")
-    if emphasized:
-        print(f"📑 加粗H1明细: {CSV_EMPH_PATH}")
+    print(f"📑 加粗H1明细: {CSV_EMPH_PATH}")
     print(f"📝 输出文件: {OUTPUT_TARGET}")
 
 # ==========================================================
@@ -199,7 +199,7 @@ def main():
     print("🚀 阶段1：逐行识别 H1~H4 …")
     results = detect_headings(clean_lines(lines))
 
-    print("✨ 阶段2：后处理（残留 H1 → 加粗） …")
+    print("✨ 阶段2：处理带#但不在H1规则的行 → 加粗 …")
     results, emphasized = emphasize_unmatched_h1(results)
 
     print("💾 阶段3：输出 Markdown 与 CSV …")
