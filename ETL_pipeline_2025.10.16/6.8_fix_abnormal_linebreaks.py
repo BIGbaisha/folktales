@@ -14,10 +14,10 @@ import csv
 from pathlib import Path
 
 # ===== 配置 =====
-INPUT_PATH  = r"I:\中国民间传统故事\分卷清洗\yunnan\6.7_Chinese Folk Tales_yunnan.md"
+INPUT_PATH  = r"I:\中国民间传统故事\分卷清洗\yunnan\6.7.1_Chinese Folk Tales_yunnan.md"
 OUTPUT_PATH = r"I:\中国民间传统故事\分卷清洗\yunnan\6.8_Chinese Folk Tales_yunnan.md"
-CSV_PATH    = r"I:\中国民间传统故事\分卷清洗\yunnan\6.7_detected_linebreaks.csv"
-ONLY_DETECT = False   # True=仅检测；False=修复
+CSV_PATH    = r"I:\中国民间传统故事\分卷清洗\yunnan\6.8_detected_linebreaks.csv"
+ONLY_DETECT = True   # True=仅检测；False=修复
 # =================
 
 # Markdown结构识别
