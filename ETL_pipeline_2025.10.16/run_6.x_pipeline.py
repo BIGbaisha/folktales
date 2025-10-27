@@ -82,7 +82,7 @@ SCRIPTS = [
     "6.4_blanks_digits_check.py",
     "6.5_detect_remove_narrator_blocks.py",
     "6.6_links_delete.py",
-    "6.7_add_location_block.py",
+    "6.7.1_add_location_quote.py",
 ]
 
 # 一致性检测脚本路径

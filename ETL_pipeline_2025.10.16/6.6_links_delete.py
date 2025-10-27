@@ -1,79 +1,94 @@
-# 创建时间: 2025/10/15 11:17
 # -*- coding: utf-8 -*-
+# 2025-10-27
 """
-Markdown 清洗脚本 v4
+Markdown Cleaner v5
 --------------------------------
-功能：
-1️⃣ 检测或清理各类链接；
-2️⃣ 各级标题前后有且仅有一个空行；
-3️⃣ 普通段落之间也有且仅有一个空行。
+Features:
+1️⃣ Detects or removes all types of links (text, image, angle, bare URLs);
+2️⃣ Ensures exactly one blank line before and after headings;
+3️⃣ Ensures exactly one blank line between paragraphs.
+
+Modes:
+- REMOVE_LINKS = True → Detection only (prints found links);
+- REMOVE_LINKS = False → Cleans and rewrites file.
 """
 
 import re
 from pathlib import Path
 
-# ===== 配置 =====
+# ===== Configuration =====
 INPUT_PATH  = r"I:\中国民间传统故事\分卷清洗\yunnan\6.5_Chinese Folk Tales_yunnan.md"
 OUTPUT_PATH = r"I:\中国民间传统故事\分卷清洗\yunnan\6.6_Chinese Folk Tales_yunnan.md"
 
-REMOVE_LINKS = False   # True=仅检测打印; False=移除链接
-# =================
+REMOVE_LINKS = False   # True = detect only; False = remove links
+# =========================
 
-# --- 正则定义 ---
-RE_HEADING = re.compile(r"^\s*#{1,6}\s+.*$")
-RE_LINK_MD = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")    # [text](url)
-RE_LINK_ANGLE = re.compile(r"<(https?://[^>]+)>")      # <http://xxx>
-RE_LINK_BARE = re.compile(r"https?://[^\s)\]]+")       # 裸url
-RE_EMPTY = re.compile(r"^[\s\u200b\u200c\u200d\uFEFF]*$")
+# --- Regular Expressions ---
+RE_HEADING = re.compile(r"^\s*#{1,6}\s+.*$")               # Markdown headings
+RE_LINK_MD = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")        # [text](url)
+RE_IMAGE_MD = re.compile(r"!\[([^\]]*)\]\(([^)]+)\)")      # ![alt](url)
+RE_LINK_ANGLE = re.compile(r"<(https?://[^>]+)>")          # <http://xxx>
+RE_LINK_BARE = re.compile(r"https?://[^\s)\]]+")           # Bare URL
+RE_EMPTY = re.compile(r"^[\s\u200b\u200c\u200d\uFEFF]*$")  # Empty line detector
 
 
-# === 功能模块 ===
+# === Core Functions ===
 
 def detect_links(text: str):
-    """检测所有类型的链接"""
+    """Detect all link types including image links."""
     md_links = RE_LINK_MD.findall(text)
+    image_links = RE_IMAGE_MD.findall(text)
     angle_links = RE_LINK_ANGLE.findall(text)
     bare_links = RE_LINK_BARE.findall(text)
 
-    total = len(md_links) + len(angle_links) + len(bare_links)
-    print(f"\n🔍 检测到 {total} 个链接：")
+    total = len(md_links) + len(image_links) + len(angle_links) + len(bare_links)
+    print(f"\n🔍 Detected {total} links (including images):")
+
+    if image_links:
+        print(f"  • Image links: {len(image_links)} (first 3 shown):")
+        for alt, url in image_links[:3]:
+            print(f"    ![{alt}]({url})")
 
     if md_links:
-        print(f"  • Markdown 链接 {len(md_links)} 个：")
-        for t, url in md_links[:10]:
+        print(f"  • Markdown links: {len(md_links)}")
+        for t, url in md_links[:5]:
             print(f"    [{t}]({url})")
+
     if angle_links:
-        print(f"  • 尖括号链接 {len(angle_links)} 个（示例前3个）：")
+        print(f"  • Angle-bracket links: {len(angle_links)} (first 3 shown):")
         for u in angle_links[:3]:
             print(f"    <{u}>")
+
     if bare_links:
-        print(f"  • 裸URL {len(bare_links)} 个（示例前3个）：")
+        print(f"  • Bare URLs: {len(bare_links)} (first 3 shown):")
         for u in bare_links[:3]:
             print(f"    {u}")
 
-    print("\n✅ 当前为检测模式，不执行删除。")
+    print("\n✅ Detection mode only — no file modifications performed.")
 
 
 def remove_links_from_text(text: str) -> str:
-    """移除所有类型的链接"""
-    text = RE_LINK_MD.sub(r"\1", text)
-    text = RE_LINK_ANGLE.sub("", text)
-    text = RE_LINK_BARE.sub("", text)
+    """Remove all link types including image links."""
+    text = RE_IMAGE_MD.sub("", text)       # Remove image links
+    text = RE_LINK_MD.sub(r"\1", text)     # Keep link text
+    text = RE_LINK_ANGLE.sub("", text)     # Remove <https://...>
+    text = RE_LINK_BARE.sub("", text)      # Remove bare URLs
     return text
 
 
 def normalize_blank_lines(lines):
     """
-    确保标题与正文段落前后空行仅1行
-    - 标题前后保证1行空行；
-    - 段落之间保证1行空行；
+    Normalize blank lines:
+    - Ensure exactly one blank line before and after headings;
+    - Ensure exactly one blank line between paragraphs.
     """
     output = []
-    prev_blank = True  # 文件开头视为空行
+    prev_blank = True  # treat start of file as blank
+
     for i, line in enumerate(lines):
         stripped = line.rstrip("\r\n")
 
-        # 标题行
+        # Heading
         if RE_HEADING.match(stripped):
             if not prev_blank:
                 output.append("\n")
@@ -82,47 +97,46 @@ def normalize_blank_lines(lines):
             prev_blank = True
             continue
 
-        # 空行
+        # Blank line
         if RE_EMPTY.match(stripped):
             if not prev_blank:
                 output.append("\n")
                 prev_blank = True
             continue
 
-        # 普通正文
+        # Normal text
         output.append(stripped + "\n")
         prev_blank = False
 
-    if not output or not output[-1].strip():
-        pass
-    else:
+    # Ensure file ends with one newline
+    if output and output[-1].strip():
         output.append("\n")
 
     return output
 
 
-# === 主程序 ===
+# === Main ===
 
 def main():
     ip = Path(INPUT_PATH)
     if not ip.exists():
-        raise FileNotFoundError(f"输入文件不存在：{ip}")
+        raise FileNotFoundError(f"Input file not found: {ip}")
 
     text = ip.read_text(encoding="utf-8", errors="ignore")
 
     if REMOVE_LINKS:
-        # 仅检测 & 打印链接
+        # Detection mode only
         detect_links(text)
         return
 
-    # 真正清理模式
-    print("🧹 执行链接清理 + 空行规范化 ...")
+    # Cleaning mode
+    print("🧹 Cleaning links and normalizing blank lines ...")
     text = remove_links_from_text(text)
     lines = text.splitlines(True)
     formatted_lines = normalize_blank_lines(lines)
     Path(OUTPUT_PATH).write_text("".join(formatted_lines), encoding="utf-8")
 
-    print(f"\n✅ 已清理并输出结果：{OUTPUT_PATH}")
+    print(f"\n✅ Cleaned and saved to: {OUTPUT_PATH}")
 
 
 if __name__ == "__main__":
