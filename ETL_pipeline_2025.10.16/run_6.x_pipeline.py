@@ -78,7 +78,7 @@ LOG_FILE = BASE_DIR / f"pipeline_run_log_{datetime.now().strftime('%Y%m%d_%H%M')
 SCRIPTS = [
     "6.1_pre_clean_check.py",
     "6.2_regex_clean_enhanced.py",
-    "6.3_H3marks_mathplaceholder_clean.py",
+    "6.3_mathplaceholder_clean.py",
     "6.4_blanks_digits_check.py",
     "6.5_detect_remove_narrator_blocks.py",
     "6.6_links_delete.py",

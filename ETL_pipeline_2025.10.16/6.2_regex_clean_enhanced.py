@@ -1,4 +1,4 @@
-# 创建时间: 2025/10/16  10:00
+# 创建时间: 2025/10/27
 # -*- coding: utf-8 -*-
 """
 三阶段正则清洗（仅打印报告；输出1个清洗后的MD文件）
@@ -16,7 +16,7 @@ import re
 from typing import List, Tuple
 
 # ========= 硬编码路径 =========
-INPUT_PATH  = r"I:\中国民间传统故事\分卷清洗\yunnan\5.1_Chinese Folk Tales_yunnan.md"
+INPUT_PATH  = r"I:\中国民间传统故事\分卷清洗\yunnan\5_Chinese Folk Tales_yunnan.md"
 OUTPUT_PATH = r"I:\中国民间传统故事\分卷清洗\yunnan\6.2_Chinese Folk Tales_yunnan.md"
 
 # ========= 通用：全角/半角、空白、标点 =========
@@ -59,6 +59,7 @@ RE_DASH_LIKE = re.compile(f"[{re.escape(DASH_LIKE)}]+")
 def normalize_light_punct(s: str) -> str:
     s = RE_WEIRD_SP.sub(" ", s)
     s = RE_DOT_LIKE.sub("·", s)       # 统一为中点
+    s = s.replace('·', '')              # Remove the middle dot entirely
     s = RE_DASH_LIKE.sub("——", s)     # 统一为中文破折号
     s = RE_MULTI_SPACE.sub(" ", s)
     return s
@@ -157,6 +158,11 @@ def clean_heading_line(line: str) -> str:
 
     title = normalize_light_punct(title)
     title = title.strip()
+
+    # Remove unwanted spaces between consecutive Chinese characters or between Chinese and punctuation
+    title = re.sub(r'(?<=[\u4e00-\u9fff])\s+(?=[\u4e00-\u9fff])', '', title)
+    title = re.sub(r'(?<=[\u4e00-\u9fff])\s+(?=[\.\,\!\?\;\:\-\—])', '', title)
+    title = re.sub(r'(?<=[\.\,\!\?\;\:\-\—])\s+(?=[\u4e00-\u9fff])', '', title)
 
     # 还原行内代码
     def _back_code(mm):
