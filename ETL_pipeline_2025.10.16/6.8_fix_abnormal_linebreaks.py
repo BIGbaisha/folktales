@@ -14,9 +14,9 @@ import csv
 from pathlib import Path
 
 # ===== 配置 =====
-INPUT_PATH  = r"I:\中国民间传统故事\分卷清洗\yunnan\6.7.1_Chinese Folk Tales_yunnan.md"
+INPUT_PATH  = r"I:\中国民间传统故事\分卷清洗\yunnan\6.8_Chinese Folk Tales_yunnan.md"
 OUTPUT_PATH = r"I:\中国民间传统故事\分卷清洗\yunnan\6.8_Chinese Folk Tales_yunnan.md"
-CSV_PATH    = r"I:\中国民间传统故事\分卷清洗\yunnan\6.8_detected_linebreaks.csv"
+CSV_PATH    = r"I:\中国民间传统故事\分卷清洗\yunnan\6.8_detected_linebreaks.after.csv"
 ONLY_DETECT = True   # True=仅检测；False=修复
 # =================
 
@@ -75,7 +75,7 @@ def detect_and_fix(lines):
         ):
             merged_line = line + normalize_line(lines[i + 2])
             # 在原文形态中插入 [ ] 表示断裂位置
-            marked_before = line + "[              ]" + normalize_line(lines[i + 2])
+            marked_before = line + "[ +++++++++++++ ]" + normalize_line(lines[i + 2])
 
             merged_records.append({
                 "heading": current_heading,

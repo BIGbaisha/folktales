@@ -1,5 +1,5 @@
 # 创建时间: 2025/10/16 10:00
-# 版本: v2025.10.16.10
+# 版本: v2025.10.28.heading
 # -*- coding: utf-8 -*-
 """
 7.1_post_clean_quality_check_enhanced.py
@@ -8,9 +8,10 @@
 对清洗完成的民间故事文本进行终末质量检测（适用于关系库/向量库使用）。
 重点检测：全角符号存在、异常字符、括号不匹配、空格异常等。
 
-说明：
-- 本脚本不关注出版排版，仅关注数据一致性。
-- 目标是保证文本符号、编码统一化，以便后续建库和向量化。
+更新：
+✅ isolated_digit 仅检测独立一位数字，排除年月日岁种
+✅ markdown_error 排除合法 H1–H5
+✅ CSV 增加“最近标题 heading”列
 """
 
 import re
@@ -30,15 +31,15 @@ PATTERNS = {
     "foreign_text": re.compile(r"[A-Za-z§№]"),            # 外文字母及编号符号
     "abnormal_symbol": re.compile(r"[★◎※→×§¤♣♦♠♥◇◆○●■□◎◎※→←↑↓]"),  # 特殊符号
     "rare_chars": re.compile(r"[\u200b\u3000\ufeff]"),    # 零宽、全角空格、BOM
-    "isolated_digit": re.compile(r"(?<!\d)\d{1,2}(?!\d)"),# 孤立数字
+    "isolated_digit": re.compile(r"(?<!\d)(\d)(?!\d)(?![年月日岁种])"),  # 独立单个数字，排除年月日岁种
     "unmatched_brackets": re.compile(r"[\(（][^\)）]*$|^[^\(（]*[\)）]"), # 括号未匹配
     "multilingual": re.compile(r"[\u3040-\u30ff\u1100-\u11ff\u3130-\u318f\uac00-\ud7af\u0400-\u04ff]"), # 日韩俄文
-    "markdown_error": re.compile(r"#{4,}|[*_]{3,}|`{3,}"), # Markdown格式异常
-    # ✅ 新增：全角符号检测（覆盖全角ASCII范围）
-    "fullwidth_symbol": re.compile(r"[\uff01-\uff5e]"),
+    "markdown_error": re.compile(r"(^|[^#])#{6,}|[*_]{4,}|`{3,}"),  # 排除合法H1-H5标题
+    "fullwidth_symbol": re.compile(r"[\uff01-\uff5e]"),  # 全角符号检测
 }
 
 CONTEXT_WIDTH = 30
+RE_HEADING = re.compile(r"^(#{1,6})\s*[\d\u4e00-\u9fa5].*$")  # 标题行识别
 
 
 def unicode_repr(s: str) -> str:
@@ -47,14 +48,23 @@ def unicode_repr(s: str) -> str:
 
 
 def detect_anomalies(text_lines):
-    """检测文本中异常项"""
+    """检测文本中异常项并记录所在标题"""
     anomalies = []
+    current_heading = "（无标题）"
+
     for i, line in enumerate(text_lines):
+        # 检测标题更新
+        if RE_HEADING.match(line.strip()):
+            current_heading = line.strip()
+            continue
+
+        # 检测异常项
         for key, pattern in PATTERNS.items():
             for match in pattern.finditer(line):
                 snippet = line[max(0, match.start()-CONTEXT_WIDTH):match.end()+CONTEXT_WIDTH].strip()
                 anomalies.append({
                     "line_no": i + 1,
+                    "heading": current_heading,
                     "anomaly_type": key,
                     "text_snippet": snippet[:60],
                     "matched_text": match.group(0),
@@ -71,7 +81,7 @@ def export_report(anomalies, output_path):
 
     path = Path(output_path)
     with path.open("w", encoding="utf-8-sig", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=["line_no", "anomaly_type", "text_snippet", "matched_text", "unicode_repr"])
+        writer = csv.DictWriter(f, fieldnames=["line_no", "heading", "anomaly_type", "text_snippet", "matched_text", "unicode_repr"])
         writer.writeheader()
         writer.writerows(anomalies)
 
@@ -81,15 +91,10 @@ def export_report(anomalies, output_path):
     for k, v in summary.items():
         print(f"  {k}: {v}")
 
-    # 全角符号详细频率统计
+    # 全角符号频率统计
     fw_chars = [a["matched_text"] for a in anomalies if a["anomaly_type"] == "fullwidth_symbol"]
     if fw_chars:
         freq = Counter(fw_chars)
-        print("\n[DETAIL] 全角符号出现频率：")
-        for ch, n in freq.most_common():
-            print(f"  {ch} ({unicode_repr(ch)}): {n} 次")
-
-        # 导出频率统计表
         freq_csv = path.with_name(path.stem + "_fullwidth_freq.csv")
         with freq_csv.open("w", encoding="utf-8-sig", newline="") as f:
             w = csv.writer(f)

@@ -11,13 +11,13 @@
 # 本脚本用于统一调度与执行“中国民间传统故事”文本清洗
 # 流水线中 6.x 系列的处理脚本（如正则清洗、格式校验、
 # 链接删除等），并在每一步修改性操作完成后，自动调用
-# “4_text_consistency_check.py” 对比前后版本差异，
+# “text_consistency_check.py” 对比前后版本差异，
 # 输出章节标题一致性报告。
 #
 # 【核心功能】
 # 1️⃣ 顺序执行 6.1 ~ 6.7 脚本；
 # 2️⃣ 每一步执行后，若前一步存在输出文件，则调用
-#     4_text_consistency_check.py 进行一致性检测；
+#     text_consistency_check.py 进行一致性检测；
 # 3️⃣ 自动生成运行日志（含脚本执行结果、时间戳、
 #     检测报告调用记录等）；
 # 4️⃣ 支持按地区变量 REGION 自动调整路径；
@@ -35,7 +35,7 @@
 # 【日志与输出】
 # ------------------------------------------------------------
 # - 自动生成日志文件 pipeline_run_log_日期时间.txt；
-# - 一致性检测报告由 4_text_consistency_check.py 生成；
+# - 一致性检测报告由 text_consistency_check.py 生成；
 # - 日志内容包括：
 #     - 各脚本执行时间与结果；
 #     - 一致性检测的输入输出文件；
@@ -43,7 +43,7 @@
 #
 # 【兼容性说明】
 # ------------------------------------------------------------
-# - 与新版 4_text_consistency_check.py 完全兼容；
+# - 与新版 text_consistency_check.py 完全兼容；
 # - 通过命令行参数传递 input_old、input_new、region；
 # - 若检测脚本未存在，则跳过检测步骤；
 # - 可安全运行于不同省份目录。
@@ -58,7 +58,7 @@
 #         ├── 6.1_pre_clean_check.py
 #         ├── 6.2_regex_clean_enhanced.py
 #         ├── ...
-#         ├── 4_text_consistency_check.py
+#         ├── text_consistency_check.py
 #         └── run_pipeline.py
 #
 # ============================================================
@@ -86,7 +86,7 @@ SCRIPTS = [
 ]
 
 # 一致性检测脚本路径
-CHECK_SCRIPT = Path(BASE_DIR) / "4_text_consistency_check.py"
+CHECK_SCRIPT = Path(BASE_DIR) / "text_consistency_check.py"
 
 
 def log(message: str):

@@ -1,5 +1,5 @@
 # ============================================================
-# 文件名称: 4_text_consistency_check.py
+# 文件名称: text_consistency_check.py
 # 版本日期: 2025-10-17
 # ============================================================
 # 【功能说明】
@@ -35,10 +35,10 @@
 # 【示例】
 # ------------------------------------------------------------
 # 独立运行：
-#   > python 4_text_consistency_check.py
+#   > python text_consistency_check.py
 #
 # 自动运行（由 run_pipeline 调用）：
-#   > python 4_text_consistency_check.py \
+#   > python text_consistency_check.py \
 #         --input_old "...\6.2_Chinese Folk Tales_yunnan.md" \
 #         --input_new "...\6.3_Chinese Folk Tales_yunnan.md" \
 #         --region "yunnan"

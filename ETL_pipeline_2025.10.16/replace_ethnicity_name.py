@@ -1,19 +1,17 @@
 # -*- coding: utf-8 -*-
-# Created on: 2025-10-30
-# Version: v2025.02
+# Created on: 2025-10-28
+# Version: v2025.03
 """
 Batch replace ethnicity names in Markdown text and print statistics.
 -------------------------------------------------------------------
-Replaces incorrect/variant ethnicity names with standardized ones,
-and prints how many replacements were made for each key.
+Overwrites the input file with replacements and prints statistics only.
 """
 
 from pathlib import Path
 import re
 
 # ===== Configuration =====
-INPUT_PATH  = r"I:\中国民间传统故事\分卷清洗\yunnan\6.7.1_Chinese Folk Tales_yunnan.md"
-OUTPUT_PATH = r"I:\中国民间传统故事\分卷清洗\yunnan\6.7.3_Chinese Folk Tales_yunnan_replaced.md"
+INPUT_PATH  = r"I:\中国民间传统故事\分卷清洗\yunnan\6.6_Chinese Folk Tales_yunnan.md"
 # ==========================
 
 # Replacement dictionary
@@ -39,25 +37,21 @@ def replace_ethnicities(text: str, mapping: dict):
 
 def main():
     ip = Path(INPUT_PATH)
-    op = Path(OUTPUT_PATH)
     if not ip.exists():
         raise FileNotFoundError(f"❌ Input file not found: {ip}")
 
     text = ip.read_text(encoding="utf-8", errors="ignore")
     replaced_text, stats = replace_ethnicities(text, REPLACE_MAP)
-    op.write_text(replaced_text, encoding="utf-8")
+    ip.write_text(replaced_text, encoding="utf-8")
 
-    print("\n====== Replacement Summary ======")
+    # Print only summary
     if stats:
         total = sum(stats.values())
         for old, count in stats.items():
             print(f"{old} → {REPLACE_MAP[old]} ：{count} 处")
-        print("---------------------------------")
-        print(f"✅ 总计替换：{total} 处")
+        print(f"总计替换：{total} 处")
     else:
         print("未检测到可替换的民族名称。")
-    print("=================================")
-    print(f"\n✅ 已写出替换后文件：{op}")
 
 if __name__ == "__main__":
     main()
