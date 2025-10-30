@@ -39,8 +39,8 @@
 #
 # 自动运行（由 run_pipeline 调用）：
 #   > python text_consistency_check.py \
-#         --input_old "...\6.2_Chinese Folk Tales_yunnan.md" \
-#         --input_new "...\6.3_Chinese Folk Tales_yunnan.md" \
+#         --input_old "...\6.2_Chinese Folk Tales_guizhou.md" \
+#         --input_new "...\6.3_Chinese Folk Tales_guizhou.md" \
 #         --region "yunnan"
 #
 # ============================================================

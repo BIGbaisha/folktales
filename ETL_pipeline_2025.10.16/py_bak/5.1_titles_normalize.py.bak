@@ -10,7 +10,7 @@ Version: ETL_pipeline_2025.10.24/5_titles_normalize_v11.py
 -------------------------------------------------------------
 1. 按行识别 H1~H4；
 2. 若行首带单个 # 但不在 H1 规则中（前言、后记、神话、传说、故事），
-   且未被识别为 H1~H4 标题 → 去掉 # 并加粗 **...**，output to 5_guizhou_emphasized_h1.csv
+   且未被识别为 H1~H4 标题 → 去掉 # 并加粗 **...**；
 3. 输出规范化 Markdown、统计表与加粗明细表（始终生成两份 CSV）。
 """
 
@@ -21,10 +21,10 @@ import csv
 # ==========================================================
 # 路径配置
 # ==========================================================
-INPUT_PATH    = r"I:\中国民间传统故事\分卷清洗\guizhou\Chinese Folk Tales_guizhou.md"
-OUTPUT_TARGET = r"I:\中国民间传统故事\分卷清洗\guizhou\5.1_Chinese Folk Tales_guizhou.md"
-CSV_PATH      = r"I:\中国民间传统故事\分卷清洗\guizhou\5.1_guizhou_heading_stats.csv"
-CSV_EMPH_PATH = r"I:\中国民间传统故事\分卷清洗\guizhou\5.1_guizhou_emphasized_h1.csv"
+INPUT_PATH    = r"I:\中国民间传统故事\分卷清洗\yunnan\Chinese Folk Tales_yunnan.md"
+OUTPUT_TARGET = r"I:\中国民间传统故事\分卷清洗\yunnan\5_Chinese Folk Tales_yunnan.md"
+CSV_PATH      = r"I:\中国民间传统故事\分卷清洗\yunnan\5_yunnan_heading_stats.csv"
+CSV_EMPH_PATH = r"I:\中国民间传统故事\分卷清洗\yunnan\5_yunnan_emphasized_h1.csv"
 
 DEBUG_SHOW_PER_LEVEL = 3
 
@@ -51,8 +51,8 @@ def build_fuzzy_regex(text: str) -> re.Pattern:
 # ==========================================================
 H1_TITLES = ["前言", "后记", "神话", "传说", "故事"]
 H2_TITLES = [
-    "开天辟地神话","天地开辟神话","自然天象神话","动物植物神话","动植物神话","图腾祖先神话","祖先神话","天体自然神话",
-    "洪水人类再繁衍神话","文化起源神话","文化起源和祖先神话","神和英雄神话","英雄神话",
+    "开天辟地神话","自然天象神话","动物植物神话","动植物神话","图腾祖先神话","祖先神话","天体自然神话",
+    "洪水人类再繁衍神话","文化起源神话","神和英雄神话","英雄神话",
     "人物传说","三国蜀汉人物传说","文人传说","现代革命家传说",
     "史事传说","地方传说","名山传说","风俗传说","动植物传说","动物植物传说","丰都鬼城传说",
     "土特产传说","民间工艺传说",
@@ -105,7 +105,7 @@ def detect_headings(lines):
             if m:
                 num = int(m.group("num"))
                 title_part = m.group("title")
-                if num <= 650 and len(title_part) <= 15:
+                if num <= 750 and len(title_part) <= 15:
                     lvl, title = 3, core
 
         # H4 附类

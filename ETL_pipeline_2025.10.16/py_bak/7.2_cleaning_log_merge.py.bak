@@ -22,7 +22,7 @@ from pathlib import Path
 from datetime import datetime
 
 # === 基础配置 ===
-REGION = "guizhou"  # 可被 update paths 自动替换
+REGION = "yunnan"  # 可被 update paths 自动替换
 BASE_DIR = Path(r"I:\中国民间传统故事\分卷清洗") / REGION
 OUTPUT_LOG = BASE_DIR / f"7.2_master_cleaning_log_{REGION}_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
 

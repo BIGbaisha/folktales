@@ -5,34 +5,36 @@
 批量扫描目录下所有 .py 文件，
 自动替换路径字符串中的地区名（如 sichuan → yunnan），
 并同时检测并替换 REGION = "xxx" 配置语句。
-支持预览模式、自动备份与 CSV 修改报告。
-⚠️ 注意：
-以下替换规则仅修改静态定义（如 REGION = "sichuan"），
-不会修改动态定义（如 REGION = args.region）。
+支持预览模式与 CSV 修改报告。
 
+更新：
+- 删除 .bak 备份逻辑；
+- 新增匹配列表/字典/任意字符串中的路径常量；
 """
 
 import os
 import re
-import shutil
 import csv
 from datetime import datetime
 
 # === 配置区 ===
 BASE_DIR = r"D:\pythonprojects\folktales\ETL_pipeline_2025.10.16"
-OLD_REGION = "sichuan"
-NEW_REGION = "yunnan"
-PREVIEW = True
-REPORT_DIR = r"I:\中国民间传统故事\分卷清洗\yunnan"
+OLD_REGION = "yunnan"
+NEW_REGION = "guizhou"
+PREVIEW = False  # True 仅预览，不写入文件
+REPORT_DIR = r"I:\中国民间传统故事\分卷清洗\guizhou"
 REPORT_NAME = f"path_change_report_{NEW_REGION}_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
 
-# 匹配路径定义语句
+# --- 匹配变量赋值路径 ---
 RE_PATH_LIKE = re.compile(
     r'(?P<key>\w*path\w*|\w*file\w*|\w*csv\w*|\w*out\w*)\s*=\s*r?"([^"\']+)"',
     re.IGNORECASE
 )
 
-# ✅ 新增：匹配 REGION = "xxx" 定义语句
+# --- 匹配任意字符串中的路径 ---
+RE_ANY_PATH = re.compile(r'r?"([^"\']*\\[^"\']*)"')
+
+# --- 匹配 REGION 定义 ---
 RE_REGION_LINE = re.compile(
     r'REGION\s*=\s*["\'](?P<region>[a-zA-Z_]+)["\']'
 )
@@ -54,7 +56,7 @@ def process_script(file_path: str):
     new_text = original_text
     changed = False
 
-    # --- 匹配路径定义 ---
+    # --- 匹配路径定义变量 ---
     matches = RE_PATH_LIKE.findall(original_text)
     for key, path in matches:
         if OLD_REGION.lower() in path.lower():
@@ -71,7 +73,24 @@ def process_script(file_path: str):
             print(f" →  {new_path}\n")
             new_text = new_text.replace(path, new_path)
 
-    # --- ✅ 新增逻辑：检测 REGION 定义并替换 ---
+    # --- 匹配任意路径字符串（包括列表等）---
+    inline_matches = RE_ANY_PATH.findall(original_text)
+    for path in inline_matches:
+        if OLD_REGION.lower() in path.lower():
+            new_path = replace_region_in_path(path)
+            changed = True
+            changes.append({
+                "script_name": os.path.basename(file_path),
+                "path_type": "inline_path",
+                "old_path": path,
+                "new_path": new_path
+            })
+            print(f"🔸 {os.path.basename(file_path)} | inline_path")
+            print(f"    {path}")
+            print(f" →  {new_path}\n")
+            new_text = new_text.replace(path, new_path)
+
+    # --- 检测 REGION 定义并替换 ---
     region_match = RE_REGION_LINE.search(original_text)
     if region_match:
         region_value = region_match.group("region")
@@ -94,8 +113,6 @@ def process_script(file_path: str):
         return
 
     if not PREVIEW:
-        backup = file_path + ".bak"
-        shutil.copy2(file_path, backup)
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(new_text)
         print(f"✅ 已修改并保存：{os.path.basename(file_path)}\n")

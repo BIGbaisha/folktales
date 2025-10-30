@@ -15,8 +15,8 @@ import csv
 from pathlib import Path
 
 # ===== Configuration =====
-INPUT_PATH  = r"I:\中国民间传统故事\分卷清洗\guizhou\6.7_Chinese Folk Tales_guizhou.md"
-OUTPUT_PATH = r"I:\中国民间传统故事\分卷清洗\guizhou\6.7.2.1_invalid_ethnicity_report.csv"
+INPUT_PATH  = r"I:\中国民间传统故事\分卷清洗\yunnan\6.7_Chinese Folk Tales_yunnan.md"
+OUTPUT_PATH = r"I:\中国民间传统故事\分卷清洗\yunnan\6.7.2.1_invalid_ethnicity_report.csv"
 
 VALID_ETHNICITIES = {
     "汉族","壮族","回族","满族","维吾尔族","苗族","彝族","土家族","藏族","蒙古族",

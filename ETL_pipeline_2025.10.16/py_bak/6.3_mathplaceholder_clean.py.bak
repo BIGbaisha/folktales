@@ -12,8 +12,8 @@ import re
 from pathlib import Path
 
 # ====== 硬编码路径（自行修改）======
-INPUT_PATH  = r"I:\中国民间传统故事\分卷清洗\guizhou\6.2_Chinese Folk Tales_guizhou.md"
-OUTPUT_PATH = r"I:\中国民间传统故事\分卷清洗\guizhou\6.3_Chinese Folk Tales_guizhou.md"
+INPUT_PATH  = r"I:\中国民间传统故事\分卷清洗\yunnan\6.2_Chinese Folk Tales_yunnan.md"
+OUTPUT_PATH = r"I:\中国民间传统故事\分卷清洗\yunnan\6.3_Chinese Folk Tales_yunnan.md"
 # ==================================
 ONLY_DETECT = False  # ✅ True = 仅检测; False = 删除并输出
 

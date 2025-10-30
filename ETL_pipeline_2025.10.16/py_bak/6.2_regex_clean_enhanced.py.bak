@@ -16,8 +16,8 @@ import re
 from typing import List, Tuple
 
 # ========= 硬编码路径 =========
-INPUT_PATH  = r"I:\中国民间传统故事\分卷清洗\guizhou\5.3_Chinese Folk Tales_guizhou.md"
-OUTPUT_PATH = r"I:\中国民间传统故事\分卷清洗\guizhou\6.2_Chinese Folk Tales_guizhou.md"
+INPUT_PATH  = r"I:\中国民间传统故事\分卷清洗\yunnan\5_Chinese Folk Tales_yunnan.md"
+OUTPUT_PATH = r"I:\中国民间传统故事\分卷清洗\yunnan\6.2_Chinese Folk Tales_yunnan.md"
 
 # ========= 通用：全角/半角、空白、标点 =========
 # 全角→半角字符映射（用于关系库/向量库清洗），更新脚本后，增加对常见全角标点的映射
@@ -41,8 +41,6 @@ _FW2HW_MAP = {
     ord('”'): ord('"'),
     ord('‘'): ord("'"),
     ord('’'): ord("'"),
-    ord('＃'): ord('#'),  # 全角井号 → 半角 #
-
 }
 
 def to_halfwidth(s: str) -> str:
@@ -232,11 +230,11 @@ def main():
         for ln in chunk:
             if RE_HEADING.match(ln):
                 cleaned = clean_heading_line(ln)
-                cleaned_lines.append(cleaned.rstrip("\r\n") + "\n")
+                cleaned_lines.append(cleaned)
                 heading_cnt += 1
             else:
                 cleaned = clean_body_line(ln)
-                cleaned_lines.append(cleaned.rstrip("\r\n") + "\n")
+                cleaned_lines.append(cleaned)
                 body_cnt += 1
 
     cleaned_text = "".join(cleaned_lines)

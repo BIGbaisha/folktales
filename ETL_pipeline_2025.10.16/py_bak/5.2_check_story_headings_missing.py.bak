@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# 创建时间: 2025/10/30
+# 创建时间: 2025/10/27
 # 版本: v2025.10
 """
 5.2_check_heading_numbering_v4_with_blanklines.py
@@ -19,8 +19,8 @@ from pathlib import Path
 # ==========================================================
 # 文件路径配置
 # ==========================================================
-INPUT_PATH = r"I:\中国民间传统故事\分卷清洗\guizhou\5.1_Chinese Folk Tales_guizhou.md"
-CSV_REPORT_PATH = r"I:\中国民间传统故事\分卷清洗\guizhou\5.1_heading_number_check_report.csv"
+INPUT_PATH = r"I:\中国民间传统故事\分卷清洗\yunnan\6.5_Chinese Folk Tales_yunnan.md"
+CSV_REPORT_PATH = r"I:\中国民间传统故事\分卷清洗\yunnan\5.2_heading_number_check_report.csv"
 
 # ==========================================================
 # 宽松匹配带数字编号的标题（允许混合标点、空格）
@@ -67,11 +67,10 @@ def detect_numbered_heading_levels(text, limit=10):
     return main_level, results
 
 # ==========================================================
-# ✅ 修正：仅匹配“指定数量”的 #（防止 H3 包含 H4）
+# 提取指定等级的所有标题
 # ==========================================================
 def extract_titles_by_level(text, level):
-    # 精确匹配指定数量的 #，确保不会匹配到更深层级的标题
-    pattern = re.compile(rf"^({'#' * level})(?!#)\s*(.+)$", re.M)
+    pattern = re.compile(rf"^({'#' * level})\s*(.+)$", re.M)
     return [m.group(2).strip() for m in pattern.finditer(text)]
 
 # ==========================================================

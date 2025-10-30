@@ -13,7 +13,7 @@ import os
 import shutil
 
 # ====== 输入路径 ======
-input_path = r"I:\中国民间传统故事\分卷清洗\guizhou\Chinese Folk Tales_guizhou.md"
+input_path = r"I:\中国民间传统故事\分卷清洗\yunnan\Chinese Folk Tales_yunnan.md"
 
 # ====== 自动生成输出路径 ======
 base, ext = os.path.splitext(input_path)
