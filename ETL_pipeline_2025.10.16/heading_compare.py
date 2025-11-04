@@ -17,8 +17,8 @@ from pathlib import Path
 # ==========================================================
 # 文件路径配置（请根据需要修改）
 # ==========================================================
-INPUT_PATH_1 = r"I:\中国民间传统故事\分卷清洗\guizhou\5.3_Chinese Folk Tales_guizhou.md"
-INPUT_PATH_2 = r"I:\中国民间传统故事\分卷清洗\guizhou\6.5_Chinese Folk Tales_guizhou.md"
+INPUT_PATH_1 = r"I:\中国民间传统故事\分卷清洗\yuzhongqu\5.3_Chinese Folk Tales_yuzhongqu.md"
+INPUT_PATH_2 = r"I:\中国民间传统故事\分卷清洗\yuzhongqu\6.5_Chinese Folk Tales_yuzhongqu.md"
 
 # ==========================================================
 # 正则：提取标题等级

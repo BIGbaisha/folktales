@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # 2025.10.31
-# ETL_pipeline_2025.10.31\2_raw_md_split.py
+# yuzhongqu_special\2_raw_md_split.py
 """
 功能：
 从 Markdown 文件中剪切：
@@ -12,12 +12,14 @@
 
 import re
 import os
+import sys
 import shutil
 from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parents[1]))  # 添加父目录
 from utils.text_normalizer import normalize_chinese_text
 
 # ====== 输入路径 ======
-input_path = Path(r"I:\中国民间传统故事\分卷清洗\guizhou\Chinese Folk Tales_guizhou.md")
+input_path = Path(r"I:\中国民间传统故事\分卷清洗\yuzhongqu\Chinese Folk Tales_yuzhongqu.md")
 
 # ====== 自动生成输出路径 ======
 base, ext = os.path.splitext(input_path)

@@ -15,8 +15,8 @@ from pathlib import Path
 # ==========================================================
 # 文件路径配置（自行修改）
 # ==========================================================
-INPUT_PATH_1 = r"I:\中国民间传统故事\分卷清洗\guizhou\5_Chinese Folk Tales_guizhou.md"
-INPUT_PATH_2 = r"I:\中国民间传统故事\分卷清洗\guizhou\6.2_Chinese Folk Tales_guizhou.md"
+INPUT_PATH_1 = r"I:\中国民间传统故事\分卷清洗\yuzhongqu\5_Chinese Folk Tales_yuzhongqu.md"
+INPUT_PATH_2 = r"I:\中国民间传统故事\分卷清洗\yuzhongqu\6.2_Chinese Folk Tales_yuzhongqu.md"
 
 # ==========================================================
 # 匹配严格的 H2 标题

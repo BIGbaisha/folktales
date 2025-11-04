@@ -54,7 +54,7 @@
 #     > python run_pipeline.py
 #
 #   示例路径结构：
-#     I:\中国民间传统故事\分卷清洗\guizhou\
+#     I:\中国民间传统故事\分卷清洗\yuzhongqu\
 #         ├── 6.1_pre_clean_check.py
 #         ├── 6.2_regex_clean_enhanced.py
 #         ├── ...
@@ -70,7 +70,7 @@ from pathlib import Path
 from datetime import datetime
 
 # === 基础配置 ===
-REGION = "guizhou"
+REGION = "yuzhongqu"
 BASE_DIR = Path(r"I:\中国民间传统故事\分卷清洗") / REGION
 LOG_FILE = BASE_DIR / f"pipeline_run_log_{datetime.now().strftime('%Y%m%d_%H%M')}.txt"
 

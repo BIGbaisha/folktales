@@ -13,8 +13,8 @@ import csv
 from pathlib import Path
 
 # ===== Configuration =====
-INPUT_PATH  = r"I:\中国民间传统故事\分卷清洗\guizhou\6.7.2_Chinese Folk Tales_guizhou.md"
-OUTPUT_CSV  = r"I:\中国民间传统故事\分卷清洗\guizhou\6.7.2.1_invalid_ethnicity_report.csv"
+INPUT_PATH  = r"I:\中国民间传统故事\分卷清洗\yuzhongqu\6.6.3_Chinese Folk Tales_yuzhongqu.md"
+OUTPUT_CSV  = r"I:\中国民间传统故事\分卷清洗\yuzhongqu\6.6.2.1_invalid_ethnicity_report.csv"
 
 # 控制模式：True=验证合法性；False=替换修正
 VALIDATION_MODE = True
@@ -54,22 +54,32 @@ def clean_ethnicity(raw: str) -> str:
 
 
 def check_ethnicity(file_path: Path):
-    """检查Markdown文件中 '>' 开头的民族名称是否合法"""
+    """只检测每个标题后的第一条引用行"""
     lines = file_path.read_text(encoding="utf-8", errors="ignore").splitlines()
     invalid = []
     current_heading = "（无标题）"
+    checked_first_line = False  # 标志：是否已扫描当前标题下的第一条引用行
 
     for i, raw in enumerate(lines, start=1):
         line = raw.strip()
+
+        # 遇到标题行，重置标志
         if RE_HEADING.match(line):
             current_heading = line
+            checked_first_line = False
             continue
-        if not line.startswith(">"):
+
+        # 只处理以 ">" 开头的行，且每个标题只处理第一条
+        if not line.startswith(">") or checked_first_line:
             continue
+
         m = RE_ETHNICITY_LINE.match(line)
         if not m:
             continue
+
         ethnicity = clean_ethnicity(m.group(1))
+        checked_first_line = True  # ✅ 标记已检查第一条引用行
+
         if not ethnicity or ethnicity == "——":
             continue
         if ethnicity not in VALID_ETHNICITIES:
@@ -80,6 +90,9 @@ def check_ethnicity(file_path: Path):
                 "status": "❌ Not in dict"
             })
     return invalid
+
+
+
 
 
 def export_csv(invalid_list, output_path):

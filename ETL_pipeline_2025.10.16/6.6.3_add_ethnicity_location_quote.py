@@ -17,9 +17,9 @@ from pathlib import Path
 # ==========================================================
 # 文件路径配置
 # ==========================================================
-INPUT_PATH  = r"I:\中国民间传统故事\分卷清洗\guizhou\6.5_Chinese Folk Tales_guizhou.md"
-OUTPUT_PATH = r"I:\中国民间传统故事\分卷清洗\guizhou\6.6.3_Chinese Folk Tales_guizhou.md"
-CSV_PATH    = r"I:\中国民间传统故事\分卷清洗\guizhou\6.6.3_ethnicity_location_detected.csv"
+INPUT_PATH  = r"I:\中国民间传统故事\分卷清洗\yuzhongqu\6.5_Chinese Folk Tales_yuzhongqu.md"
+OUTPUT_PATH = r"I:\中国民间传统故事\分卷清洗\yuzhongqu\6.6.3_Chinese Folk Tales_yuzhongqu.md"
+CSV_PATH    = r"I:\中国民间传统故事\分卷清洗\yuzhongqu\6.6.3_ethnicity_location_detected.csv"
 
 ONLY_DETECT = False       # True = 仅检测打印，不写文件
 TARGET_LEVEL = 3          # 目标标题层级（3=###，4=####）

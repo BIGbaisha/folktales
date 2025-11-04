@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Created: 2025/10/31
-# ETL_pipeline_2025.10.31\6.1_pre_clean_check.py
+# yuzhongqu_special\6.1_pre_clean_check.py
 """
 ----------------------------------------
 功能：
@@ -12,13 +12,15 @@
 import re, csv
 from pathlib import Path
 from collections import Counter
+import sys
+sys.path.append(str(Path(__file__).resolve().parents[1])) # ✅ 父路径从0级开始算
 # ✅ 新增：导入正则环境标准化函数
 from utils.text_normalizer import normalize_chinese_text
 
 # === Config ===
 # ⚙️ 可选：使用 Path 对象风格
-INPUT_PATH = Path(r"I:\中国民间传统故事\分卷清洗\guizhou\5.1_Chinese Folk Tales_guizhou.md")
-OUTPUT_CSV = Path(r"I:\中国民间传统故事\分卷清洗\guizhou\6.1_text_anomaly_report.csv")
+INPUT_PATH = Path(r"I:\中国民间传统故事\分卷清洗\yuzhongqu\6.2_Chinese Folk Tales_yuzhongqu.md")
+OUTPUT_CSV = Path(r"I:\中国民间传统故事\分卷清洗\yuzhongqu\6.2_text_anomaly_report.csv")
 ENC = "utf-8"
 
 # === 检测模式 ===

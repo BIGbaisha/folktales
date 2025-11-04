@@ -18,9 +18,9 @@ from pathlib import Path
 from collections import defaultdict
 
 # ===== 配置 =====
-INPUT_PATH = r"I:\中国民间传统故事\分卷清洗\guizhou\6.3_Chinese Folk Tales_guizhou.md"
-OUTPUT_PATH = r"I:\中国民间传统故事\分卷清洗\guizhou\6.4_Chinese Folk Tales_guizhou.md"
-CSV_PATH = r"I:\中国民间传统故事\分卷清洗\guizhou\6.4_detected_single_digits.csv"
+INPUT_PATH = r"I:\中国民间传统故事\分卷清洗\yuzhongqu\6.3_Chinese Folk Tales_yuzhongqu.md"
+OUTPUT_PATH = r"I:\中国民间传统故事\分卷清洗\yuzhongqu\6.4_Chinese Folk Tales_yuzhongqu.md"
+CSV_PATH = r"I:\中国民间传统故事\分卷清洗\yuzhongqu\6.4_detected_single_digits.csv"
 
 ONLY_DETECT = True   # True=仅检测并输出CSV；False=清理后写出新文件
 # =================

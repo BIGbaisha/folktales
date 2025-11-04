@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Created: 2025/10/31
-# ETL_pipeline_2025.10.31\6.4_detect_single_digits.py
+# yuzhongqu_special\6.4_detect_single_digits.py
 """
 检测正文中混杂中文出现的一位数字，并输出 CSV
 ------------------------------------------------
@@ -15,8 +15,10 @@
 
 import re
 import csv
+import sys
 from pathlib import Path
 from collections import defaultdict
+sys.path.append(str(Path(__file__).resolve().parents[1])) # ✅ 父路径从0级开始算
 # ✅ 新增：统一日志与I/O模块
 from utils.template_script_header_manual import (
     load_text, save_text, log_stage, log_summary
@@ -25,9 +27,9 @@ from utils.template_script_header_manual import (
 from utils.text_normalizer import normalize_chinese_text
 
 # ===== 配置 =====
-INPUT_PATH = Path(r"I:\中国民间传统故事\分卷清洗\guizhou\6.3_Chinese Folk Tales_guizhou.md")
-OUTPUT_PATH = Path(r"I:\中国民间传统故事\分卷清洗\guizhou\6.4_Chinese Folk Tales_guizhou.md")
-CSV_PATH = Path(r"I:\中国民间传统故事\分卷清洗\guizhou\6.4_detected_single_digits.csv")
+INPUT_PATH = Path(r"I:\中国民间传统故事\分卷清洗\yuzhongqu\6.3_Chinese Folk Tales_yuzhongqu.md")
+OUTPUT_PATH = Path(r"I:\中国民间传统故事\分卷清洗\yuzhongqu\6.4_Chinese Folk Tales_yuzhongqu.md")
+CSV_PATH = Path(r"I:\中国民间传统故事\分卷清洗\yuzhongqu\6.4_detected_single_digits.csv")
 
 ONLY_DETECT = True   # True=仅检测并输出CSV；False=清理后写出新文件
 # =================
