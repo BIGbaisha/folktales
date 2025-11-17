@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 # 2025.10.31
-# yuzhongqu_special\2_raw_md_split.py
+# 2_raw_md_split.py
 """
 功能：
 从 Markdown 文件中剪切：
 1. "# 前言" 之前的所有内容；
-2. "# index"（或 "# Index"）之后的所有内容；
+2. "# index"（或 "# Index"）及其之后的所有内容；
 并将这两部分保存为 *_cut.md；
 原文件仅保留 "# 前言" 到 "# index" 之间的内容。
 """
@@ -19,7 +19,7 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))  # 添加父目录
 from utils.text_normalizer import normalize_chinese_text
 
 # ====== 输入路径 ======
-input_path = Path(r"I:\中国民间传统故事\分卷清洗\yuzhongqu\Chinese Folk Tales_yuzhongqu.md")
+input_path = Path(r"I:\中国民间传统故事\分卷清洗\sichuan\Chinese Folk Tales_sichuan.md")
 
 # ====== 自动生成输出路径 ======
 base, ext = os.path.splitext(input_path)
@@ -43,11 +43,11 @@ elif not pattern_index:
     print("⚠️ 未找到 '# index' 或 '# Index'，未作修改。")
 else:
     start_preface = pattern_preface.start()
-    end_index = pattern_index.end()
+    start_index = pattern_index.start()
 
-    # 前言前 + index后
+    # 前言前 + index及其后
     before_part = content[:start_preface].rstrip()
-    after_part = content[end_index:].lstrip()
+    after_part = content[start_index:].lstrip()
 
     # 合并写入输出文件
     with open(output_path, "w", encoding="utf-8") as f:
@@ -59,7 +59,7 @@ else:
     print(f"💾 已备份原文件为：{backup_path}")
 
     # 原文件仅保留中间部分
-    middle_part = content[start_preface:end_index].strip()
+    middle_part = content[start_preface:start_index].strip()
     with open(input_path, "w", encoding="utf-8") as f:
         f.write(middle_part + "\n")
     print(f"✂️ 已更新原文件，仅保留 '# 前言' 至 '# index' 部分。")

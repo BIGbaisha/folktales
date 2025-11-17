@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 # Created: 2025/10/31
-# yuzhongqu_special\5.1_titles_normalize.py
+# 5.1_titles_normalize.py
 """
 =============================================================
 标题等级梳理脚本（逐行识别版 + 修正版加粗逻辑）
-Version: yuzhongqu_special/5_titles_normalize_v12.py
+Version: 5_titles_normalize_v12.py
 =============================================================
 """
 
@@ -25,10 +25,10 @@ from utils.text_normalizer import normalize_chinese_text
 # 路径配置
 # ==========================================================
 # ⚙️ 修改：改为 Path 对象，统一路径风格
-INPUT_PATH    = Path(r"I:\中国民间传统故事\分卷清洗\yuzhongqu\Chinese Folk Tales_yuzhongqu.md")
-OUTPUT_TARGET = Path(r"I:\中国民间传统故事\分卷清洗\yuzhongqu\5.1_Chinese Folk Tales_yuzhongqu.md")
-CSV_PATH      = Path(r"I:\中国民间传统故事\分卷清洗\yuzhongqu\5.1_yuzhongqu_heading_stats.csv")
-CSV_EMPH_PATH = Path(r"I:\中国民间传统故事\分卷清洗\yuzhongqu\5.1_yuzhongqu_emphasized_h1.csv")
+INPUT_PATH    = Path(r"I:\中国民间传统故事\分卷清洗\sichuan\Chinese Folk Tales_sichuan.md")
+OUTPUT_TARGET = Path(r"I:\中国民间传统故事\分卷清洗\sichuan\5.1_Chinese Folk Tales_sichuan.md")
+CSV_PATH      = Path(r"I:\中国民间传统故事\分卷清洗\sichuan\5.1_sichuan_heading_stats.csv")
+CSV_EMPH_PATH = Path(r"I:\中国民间传统故事\分卷清洗\sichuan\5.1_sichuan_emphasized_h1.csv")
 
 DEBUG_SHOW_PER_LEVEL = 3
 

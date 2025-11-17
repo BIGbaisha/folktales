@@ -1,151 +1,185 @@
-
 # -*- coding: utf-8 -*-
-# Created: 2025/10/31
-# yuzhongqu_special\5.2_check_story_headings_missing.py
+# Created: 2025/11/5
 """
-----------------------------------------
-功能：
-- 自动识别带数字编号标题的 Markdown 层级（H1~H6）
-- 检查编号连续性（缺号 / 跳号）
-- 生成详细 CSV 报告（标题、编号、连续状态）
-- 兼容不同卷（云南 H3、四川 H4 等）
-- ✅ 自动补齐标题间空行（直接覆盖输入文件）
+=============================================================
+标题等级梳理脚本（逐行识别版 + 修正版加粗逻辑）
+Version: 5_titles_normalize_v12.py
+=============================================================
 """
 
+import os
 import re
 import csv
-from pathlib import Path
 import sys
-sys.path.append(str(Path(__file__).resolve().parents[1]))
-# ✅ 新增：统一模块导入
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parents[1]))  # 添加父目录
+
 from utils.template_script_header_manual import (
     load_text, save_text, log_stage, log_summary
 )
 from utils.text_normalizer import normalize_chinese_text
+from collections import Counter
+from typing import List, Tuple, Dict
 
-# ==========================================================
-# 文件路径配置
-# ==========================================================
-INPUT_PATH = Path(r"I:\中国民间传统故事\分卷清洗\yuzhongqu\Chinese Folk Tales_yuzhongqu.md")
-CSV_REPORT_PATH = Path(r"I:\中国民间传统故事\分卷清洗\yuzhongqu\5.2_heading_number_check_report.csv")
+# ============================================================
+# 路径与参数配置
+# ============================================================
+INPUT_PATH = Path(r"I:\中国民间传统故事\分卷清洗\sichuan\5.1_Chinese Folk Tales_sichuan.md")
+CSV_REPORT_PATH = Path(r"I:\中国民间传统故事\分卷清洗\sichuan\5.2_number_check_H4.csv")
+EXPECTED_MAX = 1029
+TARGET_HEADING_LEVEL = 4  # ✅ 手动指定标题等级 (如 3 表示 ###, 4 表示 ####)
 
-# ==========================================================
-# 正则定义
-# ==========================================================
-RE_NUM_TITLE = re.compile(
-    r"^(#{1,6})\s*\d{1,4}[\.\、,，．：:\s]*[\u4e00-\u9fa5A-Za-z0-9（）()《》〈〉「」『』“”‘’·—\-　\s]*$",
-    re.M
+# ============================================================
+# 正则与工具
+# ============================================================
+PUNCT_WS = r"\s,\.，。:：;；!！\?？·・—\-_\~`'\"“”‘’\(\)（）\[\]【】<>《》、…⋯．·"
+_FW2HW_MAP = {ord(f): ord('0') + i for i, f in enumerate('０１２３４５６７８９')}
+
+def to_halfwidth_digits(s: str) -> str:
+    return s.translate(_FW2HW_MAP)
+
+def normalize_num_token(s: str) -> str:
+    s = to_halfwidth_digits(s)
+    return re.sub(r"[^0-9]", "", s)
+
+# 动态标题识别正则
+RE_H_PREFIX    = re.compile(rf"^\s*{'#' * TARGET_HEADING_LEVEL}\s*(?P<num>[0-9０-９]+)\s*[{PUNCT_WS}]*")
+RE_LOOSE_PREFIX = re.compile(rf"^\s*(?P<num>[0-9０-９]+)\s*[{PUNCT_WS}]+", re.UNICODE)
+RE_SUSPECT_START = re.compile(
+    rf"^\s*(?P<tok>[0-9０-９OolLIISSBb]{{1,8}})\s*[{PUNCT_WS}]+", re.UNICODE
 )
-RE_HEADING = re.compile(r"^(#{1,6})\s+.*$")
 
-# ==========================================================
-# 核心函数（原逻辑保持）
-# ==========================================================
-def detect_numbered_heading_levels(text, limit=10):
-    results = []
-    for m in RE_NUM_TITLE.finditer(text):
-        hashes = m.group(1)
-        title = m.group(0).strip()
-        level = len(hashes)
-        results.append((level, title))
-        if len(results) >= limit:
-            break
-    if not results:
-        print("⚠️ 未发现数字编号标题（例如 ### 001.鲁班）")
-        return None, []
-    print("📘 检测结果（前 10 个数字编号标题）")
-    print("-" * 60)
-    for i, (lvl, title) in enumerate(results, 1):
-        print(f"{i:02d}. H{lvl} | {title}")
-    print("-" * 60)
-    level_counts = {}
-    for lvl, _ in results:
-        level_counts[lvl] = level_counts.get(lvl, 0) + 1
-    main_level = max(level_counts, key=level_counts.get)
-    print(f"📊 主要标题等级为：H{main_level}（{level_counts}）")
-    return main_level, results
+# ============================================================
+# 主逻辑函数（严格照搬原逻辑）
+# ============================================================
+def extract_number(line: str):
+    m = RE_H_PREFIX.match(line)
+    if not m:
+        m = RE_LOOSE_PREFIX.match(line)
+        if not m:
+            return -1, ""
+    raw_num = m.group("num")
+    norm = normalize_num_token(raw_num)
+    if not norm:
+        return -1, raw_num
+    try:
+        val = int(norm)
+        if val > 100000:
+            return -1, raw_num
+        return val, raw_num
+    except ValueError:
+        return -1, raw_num
 
-def extract_titles_by_level(text, level):
-    pattern = re.compile(rf"^({'#' * level})(?!#)\s*(.+)$", re.M)
-    return [m.group(2).strip() for m in pattern.finditer(text)]
+def scan_file(path: Path):
+    rows, positions = [], []
+    text = load_text(path)
+    for idx, line in enumerate(text.splitlines(), start=1):
+        s = line.rstrip("\n")
+        n, tok = extract_number(s)
+        rows.append((idx, s, n, tok))
+        if n > 0:
+            positions.append((n, idx))
+    positions.sort(key=lambda x: (x[0], x[1]))
+    return rows, positions
 
-def detect_numbering_issues(titles):
-    nums, entries = [], []
-    for idx, t in enumerate(titles, 1):
-        m = re.match(r"^\D*(\d+)", t)
-        num = int(m.group(1)) if m else None
-        nums.append(num)
-        entries.append({"index": idx, "num": num, "title": t})
-    issues = []
-    for i in range(1, len(nums)):
-        if nums[i] is None or nums[i - 1] is None:
-            continue
-        if nums[i] != nums[i - 1] + 1:
-            issues.append((i, nums[i - 1], nums[i]))
-    return issues, nums, entries
+def _print_header(title: str):
+    bar = "—" * max(8, len(title))
+    print(f"\n{title}\n{bar}")
 
-def export_csv_report(entries, issues, csv_path):
-    missing_nums = set()
-    for i in range(1, len(entries)):
-        prev, curr = entries[i - 1]["num"], entries[i]["num"]
-        if prev is None or curr is None:
-            continue
-        if curr != prev + 1:
-            for n in range(prev + 1, curr):
-                missing_nums.add(n)
-    with open(csv_path, "w", encoding="utf-8", newline="") as f:
-        writer = csv.writer(f)
-        writer.writerow(["序号", "编号", "标题文本", "状态"])
-        for e in entries:
-            status = ""
-            if e["num"] in missing_nums:
-                status = "缺号前后"
-            elif e["num"] is None:
-                status = "无编号"
-            else:
-                status = "正常"
-            writer.writerow([e["index"], e["num"] or "", e["title"], status])
-    print(f"💾 已生成 CSV 报告: {csv_path}")
+def _chunk_print(nums: List[int], chunk_size: int = 30):
+    for i in range(0, len(nums), chunk_size):
+        print("  " + ", ".join(map(str, nums[i:i+chunk_size])))
 
-def ensure_blank_lines_between_headings(text: str) -> str:
-    lines = text.splitlines()
-    new_lines = []
-    for i, line in enumerate(lines):
-        new_lines.append(line)
-        if RE_HEADING.match(line):
-            if i + 1 < len(lines) and RE_HEADING.match(lines[i + 1]):
-                new_lines.append("")
-    return "\n".join(new_lines) + "\n"
-
-# ==========================================================
-# 主函数
-# ==========================================================
 def main():
-    log_stage("阶段1：加载与标准化")  # ✅ 新增统一日志
-    ip = Path(INPUT_PATH)
-    if not ip.exists():
-        print(f"[错误] 文件不存在: {INPUT_PATH}")
-        return
+    log_stage("开始检测指定 H 等级的标题连续性")
+    rows, positions = scan_file(INPUT_PATH)
+    nums = [n for (_, _, n, _) in rows if n > 0]
+    got = set(nums)
+    expect = set(range(1, EXPECTED_MAX + 1))
+    missing = sorted(expect - got)
+    dup = sorted([n for n, c in Counter(nums).items() if n > 0 and c > 1])
 
-    # 🧩 替换原 read_text 为标准化加载
-    text = load_text(ip)
+    _print_header("总体统计")
+    print(f"文件: {INPUT_PATH}")
+    print(f"检测标题等级: H{TARGET_HEADING_LEVEL}")
+    print(f"编号期望范围: 1..{EXPECTED_MAX}")
+    print(f"成功识别编号总数: {len(nums)}（唯一 {len(set(nums))}）")
+    print(f"缺失编号数: {len(missing)}")
+    print(f"重复编号种类数: {len(dup)}")
 
-    log_stage("阶段2：检测数字标题等级")
-    main_level, samples = detect_numbered_heading_levels(text, limit=10)
-    if not main_level:
-        return
+    _print_header("缺失编号清单")
+    if missing:
+        _chunk_print(missing)
+    else:
+        print("  ✅ 无缺失编号")
 
-    log_stage("阶段3：提取并检测编号连续性")
-    titles = extract_titles_by_level(text, main_level)
-    issues, nums, entries = detect_numbering_issues(titles)
-    export_csv_report(entries, issues, CSV_REPORT_PATH)
+    _print_header("缺失编号定位（前后锚点）")
+    if missing:
+        pos_sorted = sorted(positions, key=lambda x: x[0])
+        for m in missing:
+            left = max([p for p in pos_sorted if p[0] < m], default=None, key=lambda x: x[0])
+            right = min([p for p in pos_sorted if p[0] > m], default=None, key=lambda x: x[0])
+            prev_str = f"{left[0]} @ line {left[1]}" if left else "—"
+            next_str = f"{right[0]} @ line {right[1]}" if right else "—"
+            print(f"  缺失 {m}:  prev={prev_str}  |  next={next_str}")
+        print("  提示：在 prev 与 next 之间查漏；注意 O/0、I/l/1、S/5、B/8 混淆。")
+    else:
+        print("  （无缺失，略）")
 
-    log_stage("阶段4：补齐标题间空行")
-    new_text = ensure_blank_lines_between_headings(text)
-    save_text(ip, new_text)  # ✅ 替代 write_text
-    print(f"✅ 已补齐标题间空行并覆盖原文件: {INPUT_PATH}")
+    _print_header("重复编号详情（行号与原文）")
+    if dup:
+        for n in dup:
+            print(f"\n  ▸ 编号 {n}：")
+            count = 0
+            for ln, text, val, _tok in rows:
+                if val == n:
+                    print(f"    - line {ln}: {text}")
+                    count += 1
+                    if count >= 10:
+                        print("    ...（更多已省略）")
+                        break
+    else:
+        print("  ✅ 无重复编号")
 
-    log_summary("标题编号检测", INPUT_PATH, CSV_REPORT_PATH)  # ✅ 新增阶段总结
+    _print_header("可疑编号行（字母/数字混淆的起始 token）")
+    suspects = []
+    for ln, text, val, _tok in rows:
+        if val > 0:
+            continue
+        m = RE_SUSPECT_START.match(text)
+        if not m:
+            continue
+        tok = m.group("tok")
+        hw = to_halfwidth_digits(tok)
+        if re.search(r"[A-Za-z]", hw) and re.search(r"[0-9]", hw):
+            suspects.append((ln, tok, text))
+    if suspects:
+        shown = 0
+        for ln, tok, text in suspects:
+            print(f"  - line {ln}: [{tok}]  {text}")
+            shown += 1
+            if shown >= 30:
+                print("  ...（更多已省略）")
+                break
+        print("  提示：这些行可能是漏识的标题编号（如 ８３O→830、l76→176、９６４l→964）。")
+    else:
+        print("  （未检测到明显可疑 token）")
 
-if __name__ == "__main__":
+    # 生成 CSV 报告
+    if missing:
+        with open(CSV_REPORT_PATH, 'w', newline='', encoding='utf-8-sig') as f:
+            writer = csv.writer(f)
+            writer.writerow(['Missing_Number', 'Prev_Anchor', 'Next_Anchor'])
+            pos_sorted = sorted(positions, key=lambda x: x[0])
+            for m in missing:
+                left = max([p for p in pos_sorted if p[0] < m], default=None, key=lambda x: x[0])
+                right = min([p for p in pos_sorted if p[0] > m], default=None, key=lambda x: x[0])
+                prev_str = f"{left[0]} @ line {left[1]}" if left else "—"
+                next_str = f"{right[0]} @ line {right[1]}" if right else "—"
+                writer.writerow([m, prev_str, next_str])
+        log_summary(f"缺号报告已保存至 {CSV_REPORT_PATH}", INPUT_PATH, CSV_REPORT_PATH)
+    else:
+        log_summary("未发现缺号，未生成 CSV。", INPUT_PATH, CSV_REPORT_PATH)
+
+if __name__ == '__main__':
     main()

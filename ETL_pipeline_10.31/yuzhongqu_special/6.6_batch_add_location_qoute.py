@@ -6,8 +6,8 @@
 import re
 
 # ===== 参数设置 =====
-INPUT_FILE = r"I:\中国民间传统故事\分卷清洗\yuzhongqu\6.5_Chinese Folk Tales_yuzhongqu.md"      # 输入文件
-OUTPUT_FILE = r"I:\中国民间传统故事\分卷清洗\yuzhongqu\6.6_Chinese Folk Tales_yuzhongqu.md"    # 输出文件
+INPUT_FILE = r"I:\中国民间传统故事\分卷清洗\sichuan\6.5_Chinese Folk Tales_sichuan.md"      # 输入文件
+OUTPUT_FILE = r"I:\中国民间传统故事\分卷清洗\sichuan\6.6_Chinese Folk Tales_sichuan.md"    # 输出文件
 TARGET_LEVEL = 3             # 目标标题层级，如 3 表示 "###"
 INSERT_TEXT = "> 地点：渝中区"  # 要插入的内容
 # ===================

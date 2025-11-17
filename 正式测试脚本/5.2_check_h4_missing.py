@@ -19,7 +19,7 @@ from collections import Counter
 from typing import List, Tuple, Dict
 
 # ========== 硬编码路径与参数 ==========
-INPUT_PATH   = r"I:\中国民间传统故事\老黑解析版本\正式测试\5_Chinese Folk Tales_sichuan_normalized.md"
+INPUT_PATH   = r"I:\中国民间传统故事\分卷清洗\sichuan\5.1_Chinese Folk Tales_sichuan.md"
 EXPECTED_MAX = 1029
 
 # 为避免超长终端刷屏，可设置每段分块打印数量（None 表示全部）

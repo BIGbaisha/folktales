@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Created: 2025/10/31
-# yuzhongqu_special\6.3_remove_math_and_symbols.py
+# 6.3_remove_math_and_symbols.py
 """
 脚本功能：
 1️⃣ 检查所有数学插入符（$...$、$$...$$、\(...\)、\[...\]）
@@ -20,8 +20,8 @@ from utils.template_script_header_manual import (
 from utils.text_normalizer import normalize_chinese_text
 
 # ====== 硬编码路径（可修改）======
-INPUT_PATH  = Path(r"I:\中国民间传统故事\分卷清洗\yuzhongqu\6.2_Chinese Folk Tales_yuzhongqu.md")
-OUTPUT_PATH = Path(r"I:\中国民间传统故事\分卷清洗\yuzhongqu\6.3_Chinese Folk Tales_yuzhongqu.md")
+INPUT_PATH  = Path(r"I:\中国民间传统故事\分卷清洗\sichuan\6.2_Chinese Folk Tales_sichuan.md")
+OUTPUT_PATH = Path(r"I:\中国民间传统故事\分卷清洗\sichuan\6.3_Chinese Folk Tales_sichuan.md")
 # ==================================
 ONLY_DETECT = False  # ✅ True = 仅检测; False = 删除并输出
 

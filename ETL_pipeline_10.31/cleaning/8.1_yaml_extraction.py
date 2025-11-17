@@ -37,17 +37,21 @@ from utils.text_normalizer import normalize_chinese_text
 # CONFIG 区（每一卷只改这里）
 # ============================================================
 
-REGION = "guizhou"                 # 省份英文，如 sichuan / guizhou / yunnan
-REGION_CN = "贵州"                 # 中文省名，如 四川 / 贵州 / 云南
+REGION = "sichuan"                 # 省份英文，如 sichuan / guizhou / yunnan
+REGION_CN = "四川"                 # 中文省名，如 四川 / 贵州 / 云南
 
 # VOLUME_NO = 1                      # 卷号：第几卷 暂时不拼接
 BOOK_TITLE = f"书名:中国民间故事集成·{REGION_CN}卷"
 
 # 输入输出路径：自动根据 REGION 生成
-INPUT_MD  = Path(fr"I:\中国民间传统故事\分卷清洗\{REGION}\6.8_Chinese Folk Tales_{REGION}.md")
+INPUT_MD  = Path(fr"I:\中国民间传统故事\分卷清洗\{REGION}\6.9_Chinese Folk Tales_{REGION}.md")
 OUTPUT_MD = Path(fr"I:\中国民间传统故事\分卷清洗\{REGION}\8.1_Chinese Folk Tales_{REGION}.md")
+OUTPUT_MD_EXTRA = [
+    Path(fr"I:\中国民间传统故事\分卷清洗\8.1_yaml\8.1_Chinese Folk Tales_{REGION}.md"),
+]
 
-# 映射表（固定）
+
+    # 映射表（固定）
 CATEGORY_MAP_PATH       = Path(r"D:\pythonprojects\folktales\data\mappings\category_map.json")
 ETHNIC_MAP_PATH         = Path(r"D:\pythonprojects\folktales\data\mappings\ethnic_map.json")
 CATEGORY_ALIAS_MAP_PATH = Path(r"D:\pythonprojects\folktales\data\mappings\category_alias.json")
@@ -103,6 +107,7 @@ def ethnic_to_code(cn: str):
 # ============================================================
 # 解析 META
 # ============================================================
+
 def parse_meta(lines, start_i):
     meta = {
         "collection_place": "——",
@@ -112,6 +117,11 @@ def parse_meta(lines, start_i):
     i = start_i
     total = len(lines)
 
+    # 先跳过标题下面的空行
+    while i < total and lines[i].strip() == "":
+        i += 1
+
+    # 再正式吃 meta block（连续的 > 开头行）
     while i < total:
         l = lines[i].strip()
         if not l.startswith(">"):
@@ -131,7 +141,6 @@ def parse_meta(lines, start_i):
         i += 1
 
     return meta, i
-
 
 
 # ============================================================
@@ -314,16 +323,27 @@ def main():
             new_lines.append("```")
             new_lines.append("")
 
+            # 写完 YAML 后
             i += 1
+            # 先跳过空行
+            while i < total and lines[i].strip() == "":
+                i += 1
+            # 再跳过以 > 开头的 meta 行
             while i < total and lines[i].strip().startswith(">"):
                 i += 1
             continue
+
 
         new_lines.append(line)
         i += 1
 
     md_out = "\n".join(new_lines).rstrip() + "\n"
+    # 原写入
     save_text(OUTPUT_MD, md_out)
+
+    # 新增：循环写入多个备份
+    for extra_path in OUTPUT_MD_EXTRA:
+        save_text(extra_path, md_out)
 
     log_stage(f"输出 Markdown → {OUTPUT_MD}")
 
