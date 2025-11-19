@@ -30,7 +30,7 @@ from utils.text_normalizer import normalize_chinese_text
 # ==========================================================
 # 配置区（你只需改 REGION）
 # ==========================================================
-REGION = "yuzhongqu"   # ← ★ 改这里即可处理不同卷 ★
+REGION = "yunnan"   # ← ★ 改这里即可处理不同卷 ★
 
 # 输入大MD路径模板
 INPUT_MD_PATTERN = r"I:\中国民间传统故事\分卷清洗\8.1_yaml\8.1_Chinese Folk Tales_{region}.md"
