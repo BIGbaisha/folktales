@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # 2025/11/16
-# ETL_pipeline_10.31 — 8.1_yaml_extraction.py
+# folktales_dada_clean_10.31 — 8.1_yaml_extraction.py
 # ------------------------------------------------------------
 # 功能：
 #   1. 解析统一结构 markdown
@@ -74,7 +74,7 @@ CATEGORY_ALIAS = json.loads(CATEGORY_ALIAS_MAP_PATH.read_text(encoding="utf-8"))
 # ============================================================
 H1 = re.compile(r"^#\s+(.+)")
 H2 = re.compile(r"^##\s+(.+)")
-H3 = re.compile(r"^###\s+(\d{3})\.\s*(.+)")
+H3 = re.compile(r"^###\s+(\d{1,4})\.\s*(.+)")
 H4_VAR = re.compile(r"^####\s+(.+)")
 
 META_LINE = re.compile(r"^>\s*(.+?):\s*(.*)")

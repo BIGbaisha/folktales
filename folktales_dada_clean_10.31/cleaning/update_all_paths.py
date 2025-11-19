@@ -18,7 +18,7 @@ import csv
 from datetime import datetime
 
 # === 配置区 ===
-BASE_DIR = r"D:\pythonprojects\folktales\ETL_pipeline_10.31"
+BASE_DIR = r"/folktales_dada_clean_10.31"
 OLD_REGION = "yuzhongqu"
 NEW_REGION = "sichuan"
 PREVIEW = False  # True 仅预览，不写入文件
